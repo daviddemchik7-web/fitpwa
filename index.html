@@ -200,6 +200,19 @@ body.theme-cyber .grad{text-shadow:0 0 16px var(--aB)}
 /* bar chart */
 .bar{fill:var(--a);opacity:.42;transition:height .7s cubic-bezier(.2,.8,.2,1),y .7s cubic-bezier(.2,.8,.2,1)}
 .bar.last{fill:url(#bg-grad)}
+.rpe-row{display:flex;gap:5px;align-items:center;padding:2px 0 8px 38px;flex-wrap:wrap}
+.rpe-row .chip{padding:2px 9px;font-size:10.5px}
+#printArea{display:none}
+@media print{
+  body{background:#fff!important;color:#000!important}
+  body>*{display:none!important}
+  body.theme-cyber::after{display:none!important}
+  #printArea{display:block!important;padding:10mm;color:#000;background:#fff;font-family:Arial,sans-serif}
+  #printArea h1{font-size:22px;margin-bottom:8px}
+  #printArea h3{margin:12px 0 4px}
+  #printArea table{width:100%;border-collapse:collapse;margin:8px 0}
+  #printArea td,#printArea th{border:1px solid #999;padding:6px 9px;font-size:12px;text-align:left}
+}
 .typing i{width:5px;height:5px;border-radius:99px;background:var(--s);display:inline-block;animation:tp 1s infinite}
 .typing i:nth-child(2){animation-delay:.15s}
 .typing i:nth-child(3){animation-delay:.3s}
@@ -254,6 +267,7 @@ body.theme-cyber .side .grad{font-family:'Orbitron','Manrope',sans-serif;letter-
 <div id="modal-root"></div>
 <div id="rest-overlay"></div>
 <div id="toast-root"></div>
+<div id="printArea"></div>
 <script>
 'use strict';
 /* ============ FitPWA — single-file PWA (vanilla JS) ============ */
@@ -323,6 +337,41 @@ function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,
 function money(n){ return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,' ')+' ₽'; }
 function uid(){ return 'x'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
 function icons(){ try{ window.lucide&&lucide.createIcons(); }catch(e){} }
+function fillReport(){
+  const c=aiCtx();
+  const el=document.getElementById('printArea'); if(!el) return;
+  el.innerHTML='<h1>FitPWA · Отчёт клиента</h1><p style="font-size:14px">'+esc(DB.me.name)+' · '+new Date().toLocaleDateString('ru-RU')+'</p>'+
+   '<h3 style="margin:10px 0 4px">Динамика веса</h3><table><tr><th>Дата</th><th>Вес, кг</th></tr>'+
+   DB.weights.slice().reverse().map(w=>'<tr><td>'+esc(w.d)+'</td><td>'+w.v+'</td></tr>').join('')+'</table>'+
+   '<p>Изменение: <b>'+c.delta+' кг</b> · цель: <b>'+c.goal+' кг</b> · серия без пропусков: <b>'+c.streak+' дн</b> · тренировок в месяце: <b>'+c.sessions+'</b></p>'+
+   '<p>Замеры: '+Object.entries(DB.measures).map(kv=>kv[0]+' — '+kv[1]+' см').join(' · ')+'</p>'+
+   '<p style="font-size:11px;color:#666">Сгенерировано в FitPWA · при печати в браузере выбери «Сохранить как PDF»</p>';
+}
+function angleDeg(a,b,c){ const v1x=a.x-b.x, v1y=a.y-b.y, v2x=c.x-b.x, v2y=c.y-b.y; const dot=v1x*v2x+v1y*v2y, m=Math.sqrt(v1x*v1x+v1y*v1y)*Math.sqrt(v2x*v2x+v2y*v2y); return m?Math.acos(Math.max(-1,Math.min(1,dot/m)))*180/Math.PI:0; }
+function drawShare(){
+  const cv=document.getElementById('sh-cv'); if(!cv) return;
+  const x=cv.getContext('2d'); const W=cv.width, H=cv.height; const c=aiCtx();
+  const g=x.createLinearGradient(0,0,W,H); g.addColorStop(0,'#05070a'); g.addColorStop(1,'#0c1020'); x.fillStyle=g; x.fillRect(0,0,W,H);
+  const r1=x.createRadialGradient(0,0,0,0,0,W*0.8); r1.addColorStop(0,'rgba(124,92,255,.28)'); r1.addColorStop(1,'rgba(124,92,255,0)'); x.fillStyle=r1; x.fillRect(0,0,W,H);
+  const r2=x.createRadialGradient(W,H,0,W,H,W*0.8); r2.addColorStop(0,'rgba(34,211,238,.20)'); r2.addColorStop(1,'rgba(34,211,238,0)'); x.fillStyle=r2; x.fillRect(0,0,W,H);
+  for(let i=0;i<W;i+=60){ x.fillStyle='rgba(255,255,255,.025)'; x.fillRect(i,0,1,H); }
+  for(let i=0;i<H;i+=60){ x.fillStyle='rgba(255,255,255,.025)'; x.fillRect(0,i,W,1); }
+  const tg=x.createLinearGradient(70,0,320,0); tg.addColorStop(0,'#7c5cff'); tg.addColorStop(1,'#22d3ee');
+  x.fillStyle=tg; x.font='800 40px Manrope,sans-serif'; x.fillText('FITPWA',70,92);
+  x.fillStyle='#94a3b8'; x.font='600 22px Manrope,sans-serif'; x.fillText('ИТОГИ МЕСЯЦА · '+new Date().toLocaleDateString('ru-RU',{month:'long',year:'numeric'}).toUpperCase(),70,132);
+  x.fillStyle='#f8fafc'; x.font='800 110px Manrope,sans-serif'; x.fillText((c.delta>0?'+':'')+c.delta+' кг',66,300);
+  x.fillStyle='#94a3b8'; x.font='600 26px Manrope,sans-serif'; x.fillText('изменение веса за '+c.weeks+' нед · цель '+c.goal+' кг',70,348);
+  const rows=[['🔥 Серия без пропусков',c.streak+' дней'],['✅ Тренировок в месяце',String(c.sessions)],['🏋 Объём за неделю',(c.volume/1000).toFixed(1)+' т']];
+  let y=452;
+  rows.forEach(r=>{
+    x.fillStyle='rgba(255,255,255,.05)'; x.fillRect(66,y-54,W-132,88);
+    x.fillStyle='#f8fafc'; x.font='700 32px Manrope,sans-serif'; x.fillText(r[0],96,y);
+    x.textAlign='right'; x.fillStyle='#22d3ee'; x.font='800 44px Manrope,sans-serif'; x.fillText(r[1],W-96,y); x.textAlign='left';
+    y+=116;
+  });
+  x.fillStyle='#f8fafc'; x.font='700 32px Manrope,sans-serif'; x.fillText(DB.me.name,70,H-160);
+  x.fillStyle='#64748b'; x.font='500 24px Manrope,sans-serif'; x.fillText('fitpwa · премиум фитнес-платформа',70,H-116);
+}
 function toast(t){ const r=document.getElementById('toast-root'); const el=document.createElement('div'); el.className='toast'; el.textContent=t; r.appendChild(el); setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';},2200); setTimeout(()=>el.remove(),2600); }
 function ic(n,cls){ return '<i data-lucide="'+n+'" class="lucide '+(cls||'')+'"></i>'; }
 function todayLabel(){ const d=new Date(); return ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'][d.getDay()]+', '+d.getDate()+' '+['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'][d.getMonth()]; }
@@ -333,7 +382,8 @@ const S={ role:'client', cView:'home', tView:'dash', clientId:null, week:0, selD
 
 /* ---------- modal / toast ---------- */
 function openModal(html){ document.getElementById('modal-root').innerHTML='<div class="overlay" onclick="if(event.target===this)A.closeModal()"><div class="modal">'+html+'</div></div>'; icons(); }
-function closeModal(){ document.getElementById('modal-root').innerHTML=''; }
+function closeModal(){ document.getElementById('modal-root').innerHTML='';
+  if(window._pmStream){ try{ window._pmStream.getTracks().forEach(t=>t.stop()); }catch(e){} window._pmStream=null; } }
 function mHead(t){ return '<div class="flex items-center justify-between gap-2 px-5 py-4 border-b" style="border-color:var(--line)"><b>'+t+'</b><button class="btn-ic" onclick="A.closeModal()">'+ic('x')+'</button></div>'; }
 
 /* ---------- counters & charts ---------- */
@@ -384,7 +434,7 @@ function animateBars(){ setTimeout(()=>{ document.querySelectorAll('#barchart .b
 /* ---------- rest timer ---------- */
 const RT={total:90,left:90,iv:null};
 function rtStart(sec){ RT.total=sec; RT.left=sec; document.getElementById('rest-overlay').innerHTML=rtHTML(); icons(); paintRT(); rtRun(); }
-function rtRun(){ clearInterval(RT.iv); RT.iv=setInterval(()=>{ RT.left--; paintRT(); if(RT.left<=0){
+function rtRun(){ clearInterval(RT.iv); RT.iv=setInterval(()=>{ RT.left--; paintRT(); if(RT.left<=3&&RT.left>0&&DB.settings.vibrate&&navigator.vibrate) navigator.vibrate(160); if(RT.left<=0){
   rtClose(); if(DB.settings.sound) beep();
   if(S.role==='client'&&S.cView==='player'){
     if(doneSets()>=totalSets()){ A.spFinish(true); return; }
@@ -463,12 +513,16 @@ function aiInsight(){
   out.push('Streak '+c.streak+' дн — '+pick(['лучшая серия месяца 🔥','продолжай, ты в потоке','до ачивки «'+(c.streak<21?'21 день':c.streak<30?'30 дней':'50 дней')+'» осталось '+Math.max(1,(c.streak<21?21:c.streak<30?30:50)-c.streak)+' дн']));
   return out;
 }
+function parseSecs(r){ if(!r) return 60; const m=/(\d+)\s*мин/.exec(r); if(m) return +m[1]*60; const m2=/(\d+)\s*сек/.exec(r); if(m2) return +m2[1]; return 60; }
+function fmtT2(s){ const m=Math.floor(s/60), ss=s%60; return (m?m+':'+('0'+ss).slice(-2):ss+' с'); }
+let SETT=null;
 function aiSuggestPlan(e){
   const range=e.reps.split('-'); const top=parseInt(range[1]||range[0]), low=parseInt(range[0]);
   let w=e.weight, reps=low;
   const h=DB.exHistory.slice().reverse().find(x=>x.name===e.name);
   if(h){
-    if(h.reps>=top && h.weight>=e.weight){ w=e.weight+(e.weight<10?2:2.5); reps=low; }
+    if(h.rpe>=9){ w=h.weight; reps=Math.min(top,h.reps+1); }
+    else if(h.reps>=top && h.weight>=e.weight){ w=e.weight+(e.weight<10?2:2.5); reps=low; }
     else if(h.reps<=low-3){ w=Math.max(1,Math.round(h.weight*0.9)); reps=low; }
     else { w=h.weight; reps=Math.min(top,h.reps+1); }
   }
@@ -510,7 +564,7 @@ const WORKOUT={name:'Пуш · Верх тела',ex:[
   {name:'Жим гантелей лёжа',sets:3,reps:'8-12',weight:16,rest:90},
   {name:'Жим гантелей на плечи',sets:3,reps:'10-12',weight:8,rest:75},
   {name:'Разводка гантелей',sets:3,reps:'12-15',weight:6,rest:60},
-  {name:'Французский жим',sets:3,reps:'10-12',weight:8,rest:60}
+  {name:'Планка',sets:3,reps:'45 сек',weight:'',rest:45}
 ]};
 function totalSets(){ return WORKOUT.ex.reduce((a,e)=>a+e.sets,0); }
 function doneSets(){ return WORKOUT.ex.reduce((a,e,i)=>a+(DB.sp.done[i]||[]).filter(Boolean).length,0); }
@@ -560,17 +614,27 @@ function vPlayer(){
      '<div class="bars"><i></i><i></i><i></i><i></i><i></i></div>'+
      '<div class="absolute bottom-3 left-4 tiny muted">Демо-видео · техника упражнения</div>'+
     '</div>'+
+    '<button class="btn btn-sm w-full" onclick="A.poseOpen()">'+ic('video')+'Скан техники камерой · AI-скелет (бета)</button>'+
     '<div class="glass p-5">'+
      '<div class="flex items-center justify-between"><div><b>'+e.name+'</b><div class="small muted mt-0.5">'+e.sets+' × '+e.reps+' · отдых '+e.rest+' сек</div></div>'+
       '<div class="flex gap-2"><button class="btn-ic" onclick="A.spMove(-1)">'+ic('chevron-left','lucide-sm')+'</button><button class="btn-ic" onclick="A.spMove(1)">'+ic('chevron-right','lucide-sm')+'</button></div></div>'+
      '<div class="tiny mt-2 ai-tip">✦ AI подобрал вес — просто отмечай подходы</div>'+
-     '<div class="mt-2">'+Array.from({length:e.sets}).map((_,si)=>
-       '<div class="set-row'+(done[si]?' set-done':'')+'" style="cursor:pointer" onclick="A.spSet('+i+','+si+')">'+
-       '<span class="set-num">'+(si+1)+'</span>'+
-       '<input style="width:72px;padding:8px" type="number" value="'+(DB.sp.inputs['w'+i+'_'+si]??plan.w)+'" onchange="A.spInput(\'w'+i+'_'+si+'\',this.value)" onclick="event.stopPropagation()" aria-label="вес, кг"/>'+
-       '<input style="width:72px;padding:8px" type="number" value="'+(DB.sp.inputs['r'+i+'_'+si]??plan.reps)+'" onchange="A.spInput(\'r'+i+'_'+si+'\',this.value)" onclick="event.stopPropagation()" aria-label="повторения"/>'+
-       '<span class="tiny muted flex-1 text-right">'+e.reps+'</span>'+
-       '<button class="check" onclick="event.stopPropagation();A.spSet('+i+','+si+')" aria-label="отметить подход">'+ic('check','lucide-sm')+'</button></div>').join('')+
+     '<div class="mt-2">'+Array.from({length:e.sets}).map((_,si)=>{
+       const isTime=/сек|мин/i.test(e.reps), secs=parseSecs(e.reps), rpe=DB.sp.inputs['rpe'+i+'_'+si];
+       let row='<div class="set-row'+(done[si]?' set-done':'')+'" style="cursor:pointer" onclick="A.spSet('+i+','+si+')">'+
+        '<span class="set-num">'+(si+1)+'</span>';
+       if(isTime){
+         row+='<button class="btn btn-sm flex-1" onclick="event.stopPropagation();A.setTimeStart('+i+','+si+')">'+ic('timer','lucide-sm')+'<span id="td-'+i+'_'+si+'">'+fmtT2(secs)+'</span></button>'+
+              '<span class="tiny muted text-right">на время</span>';
+       } else {
+         row+='<input style="width:72px;padding:8px" type="number" value="'+(DB.sp.inputs['w'+i+'_'+si]??plan.w)+'" onchange="A.spInput(\'w'+i+'_'+si+'\',this.value)" onclick="event.stopPropagation()" aria-label="вес, кг"/>'+
+              '<input style="width:72px;padding:8px" type="number" value="'+(DB.sp.inputs['r'+i+'_'+si]??plan.reps)+'" onchange="A.spInput(\'r'+i+'_'+si+'\',this.value)" onclick="event.stopPropagation()" aria-label="повторения"/>'+
+              '<span class="tiny muted flex-1 text-right">'+e.reps+'</span>';
+       }
+       row+='<button class="check" onclick="event.stopPropagation();A.spSet('+i+','+si+')" aria-label="отметить подход">'+ic('check','lucide-sm')+'</button></div>';
+       if(done[si]&&!isTime) row+='<div class="rpe-row"><span class="tiny muted">Как тяжело?</span>'+[5,6,7,8,9,10].map(v=>'<button class="chip'+(rpe===v?' on':'')+'" style="padding:2px 9px" onclick="event.stopPropagation();A.spRpe('+i+','+si+','+v+')">'+v+'</button>').join('')+'</div>';
+       return row;
+     }).join('')+
      '</div>'+
     '</div>'+
     (ds>0&&ds<ts?'<button class="btn w-full" onclick="A.spFinish()">Завершить раньше</button>':'')+
@@ -698,7 +762,8 @@ function vProfile(){
 function vDash(){
   const tm={P:'Персональная',G:'Группа',O:'Онлайн'};
   return trainerShell('dash',
-   '<header class="header"><div class="ic-box">'+ic('layout-dashboard')+'</div><div class="flex-1"><b>Дашборд</b><div class="tiny muted">Сегодня · '+todayLabel()+'</div></div>'+roleBtn()+'</header>'+
+   '<header class="header"><div class="ic-box">'+ic('layout-dashboard')+'</div><div class="flex-1"><b>Дашборд</b><div class="tiny muted">Сегодня · '+todayLabel()+'</div></div>'+
+    '<button class="btn btn-sm desktop-only" onclick="A.gymOpen()">'+ic('monitor','lucide-sm')+'Экран зала</button>'+roleBtn()+'</header>'+
    '<div class="p-4 lg:p-6 space-y-4" style="max-width:1100px">'+
     '<div class="grid grid-cols-2 lg:grid-cols-4 gap-3">'+
      '<div class="glass kpi"><div class="ic-box">'+ic('users','lucide-sm')+'</div><div class="v" data-count="24">0</div><div class="l">Клиенты · +2 за неделю</div></div>'+
@@ -772,7 +837,7 @@ function peView(){
   const items=LIB[S.libGroup].filter(x=>!S.libQ||x.toLowerCase().includes(S.libQ.toLowerCase()));
   return '<div class="fade-in">'+
    '<header class="header"><button class="btn-ic" onclick="A.peClose()">'+ic('chevron-left')+'</button><div class="flex-1"><b>Конструктор · '+(PE.name||'Новая программа')+'</b><div class="tiny muted">Перетащи упражнение в день или нажми на него</div></div>'+
-    '<button class="btn btn-g btn-sm" onclick="A.peSave()">'+ic('check','lucide-sm')+'Сохранить</button></header>'+
+    '<button class="btn btn-sm" onclick="A.peTextModal()">'+ic('sparkles','lucide-sm')+'Текст → AI</button><button class="btn btn-g btn-sm" onclick="A.peSave()">'+ic('check','lucide-sm')+'Сохранить</button></header>'+
    '<div class="p-4 lg:p-6 space-y-4" style="max-width:1100px">'+
     '<div class="grid md:grid-cols-3 gap-3">'+
      '<div><label>Название</label><input value="'+esc(PE.name)+'" oninput="PE.name=this.value" placeholder="Например: Сушка · 6 недель"/></div>'+
@@ -898,19 +963,33 @@ const A={
     }
     render();
   },
+  spRpe(i,si,v){ DB.sp.inputs['rpe'+i+'_'+si]=v; save(); render(); },
+  setTimeStart(i,si){
+    const done=DB.sp.done[i]||[]; if(done[si]) return;
+    if(SETT&&SETT.iv) clearInterval(SETT.iv);
+    const secs=parseSecs(WORKOUT.ex[i].reps);
+    SETT={i:i,si:si,left:secs,iv:null};
+    const tick=()=>{ const el=document.getElementById('td-'+i+'_'+si);
+      if(!el){ clearInterval(SETT.iv); SETT=null; return; }
+      SETT.left--; el.textContent=fmtT2(Math.max(0,SETT.left));
+      if(SETT.left<=3&&SETT.left>0&&DB.settings.vibrate&&navigator.vibrate) navigator.vibrate(150);
+      if(SETT.left<=0){ clearInterval(SETT.iv); SETT=null; if(DB.settings.sound) beep(); A.spSet(i,si); } };
+    tick(); SETT.iv=setInterval(tick,1000);
+  },
   spFinish(auto){
     rtClose();
     WORKOUT.ex.forEach((e,i)=>{
       const plan=aiSuggestPlan(e);
-      const pairs=[];
+      const pairs=[]; const rpes=[];
       for(let si=0;si<e.sets;si++){
         const wv=parseFloat(DB.sp.inputs['w'+i+'_'+si] ?? plan.w), rv=parseFloat(DB.sp.inputs['r'+i+'_'+si] ?? plan.reps);
         if(wv&&rv) pairs.push([wv,rv]);
+        const rp=parseFloat(DB.sp.inputs['rpe'+i+'_'+si]); if(rp) rpes.push(rp);
       }
       if(!pairs.length) return;
       const maxW=Math.max.apply(null,pairs.map(p=>p[0]));
       const reps=Math.max.apply(null,pairs.filter(p=>p[0]===maxW).map(p=>p[1]));
-      DB.exHistory.push({name:e.name,weight:maxW,reps:reps,date:new Date().toISOString().slice(0,10)});
+      DB.exHistory.push({name:e.name,weight:maxW,reps:reps,rpe:rpes.length?Math.max.apply(null,rpes):null,date:new Date().toISOString().slice(0,10)});
     });
     if(DB.exHistory.length>200) DB.exHistory=DB.exHistory.slice(-200);
     DB.sp={done:{},cur:0,inputs:{}}; save(); DB.me.streak++; DB.me.sessionsMonth++; save(); A.cNav('home');
@@ -978,6 +1057,121 @@ const A={
   },
   aiQuick(q){ A.aiSend(q); },
   aiOpen(){ S.chatMode='ai'; A.cNav('chat'); },
+
+  /* скан техники камерой */
+  async poseOpen(){
+    openModal(mHead(ic('video')+' Скан техники · бета')+
+     '<div class="modal-b">'+
+      '<div style="position:relative;border-radius:16px;overflow:hidden;background:#000">'+
+       '<video id="pm-video" playsinline muted style="width:100%;display:block;transform:scaleX(-1)"></video>'+
+       '<canvas id="pm-cv" style="position:absolute;inset:0;width:100%;height:100%"></canvas>'+
+      '</div>'+
+      '<div class="flex items-center justify-between mt-3"><div id="pm-status" class="tiny muted">Инициализация камеры и AI-модели…</div><div id="pm-reps" class="grad" style="font-size:30px;font-weight:800">0</div></div>'+
+      '<div id="pm-hint" class="tiny muted mt-1">Встань боком к камере и сделай приседания — AI посчитает повторения и следит за углом колена</div>'+
+     '</div><div class="modal-f"><button class="btn" onclick="A.closeModal()">Закрыть</button></div>');
+    try{
+      if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia) throw new Error('камера не поддерживается');
+      const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:640}});
+      window._pmStream=stream;
+      const video=document.getElementById('pm-video'); if(!video) return;
+      video.srcObject=stream; await video.play();
+      document.getElementById('pm-status').textContent='Загружаю AI-модель позы…';
+      const vision=await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14');
+      const files=await vision.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm');
+      const pl=await vision.PoseLandmarker.createFromOptions(files,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',delegate:'GPU'},runningMode:'VIDEO',numPoses:1});
+      const st=document.getElementById('pm-status'); if(st) st.textContent='Сканирую — следи за углом колена';
+      const cv=document.getElementById('pm-cv'); const ctx=cv.getContext('2d');
+      const CONS=[[11,12],[11,13],[13,15],[12,14],[14,16],[23,24],[23,25],[25,27],[24,26],[26,28],[11,23],[12,24]];
+      let reps=0, state='up';
+      const loop=()=>{
+        const v=document.getElementById('pm-video'); if(!v){ return; }
+        if(v.readyState>=2){
+          if(cv.width!==v.videoWidth&&v.videoWidth){ cv.width=v.videoWidth; cv.height=v.videoHeight; }
+          const res=pl.detectForVideo(v,performance.now());
+          ctx.clearRect(0,0,cv.width,cv.height);
+          const lm=res.landmarks&&res.landmarks[0];
+          if(lm){
+            const c=tc();
+            ctx.strokeStyle=c.a; ctx.lineWidth=Math.max(2,cv.width/240); ctx.lineCap='round';
+            CONS.forEach(pr=>{ const p1=lm[pr[0]], p2=lm[pr[1]]; ctx.beginPath(); ctx.moveTo(p1.x*cv.width,p1.y*cv.height); ctx.lineTo(p2.x*cv.width,p2.y*cv.height); ctx.stroke(); });
+            ctx.fillStyle=c.b; lm.forEach(p=>{ ctx.beginPath(); ctx.arc(p.x*cv.width,p.y*cv.height,Math.max(3,cv.width/130),0,7); ctx.fill(); });
+            const ang=Math.round(angleDeg(lm[23],lm[25],lm[27]));
+            const hint=document.getElementById('pm-hint'); if(hint) hint.textContent='Угол колена: '+ang+'° '+(ang<110?'— вниз':'— вверх')+' · повторений: '+reps;
+            if(state==='up'&&ang<105) state='down';
+            if(state==='down'&&ang>155){ state='up'; reps++; const el=document.getElementById('pm-reps'); if(el) el.textContent=reps; if(DB.settings.vibrate&&navigator.vibrate) navigator.vibrate(40); }
+          }
+        }
+        requestAnimationFrame(loop);
+      };
+      requestAnimationFrame(loop);
+    }catch(err){
+      const st=document.getElementById('pm-status');
+      if(st) st.textContent='Не удалось: нужны интернет, HTTPS и разрешение на камеру. ('+String(err&&err.message||err).slice(0,70)+')';
+    }
+  },
+
+  /* карточка результата */
+  shareCard(){
+    openModal(mHead('Карточка результата · PNG')+
+     '<div class="modal-b"><canvas id="sh-cv" width="1080" height="1350" style="width:100%;border-radius:14px;display:block"></canvas><p class="tiny muted2 mt-2 text-center">Скачай и поделись в сторис — пусть знают, кто тут в форме</p></div>'+
+     '<div class="modal-f"><button class="btn" onclick="A.closeModal()">Закрыть</button><button class="btn btn-g" onclick="A.shareDl()">'+ic('down','lucide-sm')+'Скачать PNG</button></div>');
+    drawShare();
+  },
+  shareDl(){
+    const cv=document.getElementById('sh-cv'); if(!cv) return;
+    cv.toBlob(b=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='fitpwa-results.png'; a.click(); URL.revokeObjectURL(a.href); });
+    toast('Карточка сохранена 📸');
+  },
+
+  /* PDF-отчёт */
+  printReport(){
+    fillReport(); window.print();
+  },
+
+  /* AI-парсер программы из текста */
+  peTextModal(){
+    openModal(mHead(ic('sparkles')+' AI-парсер программы')+
+     '<div class="modal-b"><label>Вставь текст программы в любом виде</label><textarea id="pe-txt" rows="8" placeholder="День 1 — Грудь&#10;Жим лёжа 4х10 70кг&#10;Разводка гантелей 3х12 10кг&#10;День 2 — Спина&#10;Подтягивания 4х8"></textarea><p class="tiny muted mt-2">AI превратит текст в дни и упражнения конструктора. Работает с любым списком — даже из чата или заметок.</p></div>'+
+     '<div class="modal-f"><button class="btn" onclick="A.closeModal()">Отмена</button><button class="btn btn-g" onclick="A.peParse()">Разобрать ✨</button></div>');
+  },
+  async peParse(){
+    const ta=document.getElementById('pe-txt'); const txt=ta?ta.value.trim():''; if(!txt){ toast('Вставь текст'); return; }
+    let days=null;
+    try{
+      if(navigator.onLine){
+        const r=await fetch('https://text.pollinations.ai/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'system',content:'Преобразуй текст программы тренировок СТРОГО в JSON без пояснений и markdown: {"days":[{"title":"День 1 · Название","ex":["Упражнение 4x10 70кг","..."]}]}. Сгруппируй упражнения по дням из текста. Если дней нет — один день «День 1».'},{role:'user',content:txt}],model:'openai'})});
+        let t=(await r.text()||'').trim().replace(/```json|```/g,'').trim();
+        const m=t.match(/\{[\s\S]*\}/);
+        if(m){ const j=JSON.parse(m[0]); if(j.days&&j.days.length) days=j.days; }
+      }
+    }catch(e){}
+    if(!days){
+      days=[];
+      txt.split('\n').forEach(line=>{ const L=line.trim(); if(!L) return;
+        if(/^(день|day)\b/i.test(L)||(L.length<45&&/—|-\s|:/.test(L)&&!/х\s*\d/i.test(L))){ days.push({title:L.replace(/^(\d+[.)]|#)\s*/,''),ex:[]}); }
+        else { if(!days.length) days.push({title:'День 1',ex:[]}); days[days.length-1].ex.push(L.replace(/^[-•*]\s*/,'')); }
+      });
+    }
+    days=(days||[]).filter(d=>d&&d.title);
+    if(!days.length||!days.some(d=>d.ex&&d.ex.length)){ toast('Не разобрал — попробуй яснее сформулировать'); return; }
+    PE.days=days.map(d=>({title:String(d.title),ex:(d.ex||[]).map(String)}));
+    S.peDay=0; closeModal(); render(); toast('Программа разобрана ✨');
+  },
+
+  /* экран зала */
+  gymOpen(){
+    const tm={P:'Персональная',G:'Группа',O:'Онлайн'};
+    const list=DB.tToday.map(s=>'<div class="row-i" style="padding:16px 0"><span class="dot" style="width:12px;height:12px;background:'+TYPE(s.type).c+'"></span><div style="flex:1"><b style="font-size:24px">'+esc(s.name)+'</b><div class="muted">'+tm[s.type]+' · '+s.dur+'</div></div><b style="font-size:28px">'+s.t+'</b></div>').join('');
+    document.getElementById('rest-overlay').innerHTML='<div class="rest-ov" style="align-items:flex-start;overflow-y:auto"><div style="width:100%;max-width:920px;margin:auto;padding:36px">'+
+     '<div class="flex items-center justify-between"><div class="grad" style="font-size:28px;font-weight:800;letter-spacing:.14em">FITPWA · ЗАЛ</div><button class="btn-ic" onclick="A.gymClose()" style="width:48px;height:48px">'+ic('x','lucide-lg')+'</button></div>'+
+     '<div id="gym-clock" style="font-size:min(15vw,110px);font-weight:800;text-align:center;margin:30px 0;font-variant-numeric:tabular-nums" class="grad">--:--</div>'+
+     '<div class="glass p-6">'+(list||'<p class="muted">Сегодня сессий нет</p>')+'</div>'+
+     '<p class="tiny muted2 text-center mt-4">Экран зала — выведи на планшет в зале · Esc — закрыть</p></div></div>';
+    icons();
+    if(window._gymI) clearInterval(window._gymI);
+    window._gymI=setInterval(()=>{ const el=document.getElementById('gym-clock'); if(!el){ clearInterval(window._gymI); return; } const d=new Date(); el.textContent=('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)+':'+('0'+d.getSeconds()).slice(-2); },1000);
+  },
+  gymClose(){ if(window._gymI) clearInterval(window._gymI); document.getElementById('rest-overlay').innerHTML=''; },
 
   /* клиент: профиль */
   tgl(k){ DB.settings[k]=!DB.settings[k]; save(); render(); },
@@ -1081,9 +1275,10 @@ const A={
 /* ---------- init ---------- */
 load();
 render();
-if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
-  window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
-}
+ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+ window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
+ }
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'&&document.querySelector('#rest-overlay .rest-ov')) A.gymClose(); });
 </script>
 </body>
 </html>
