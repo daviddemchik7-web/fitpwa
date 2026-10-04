@@ -18,14 +18,30 @@
 <script>window.lucide||document.write('<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"><\/script>')</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Orbitron:wght@700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
 <style>
 :root{
   --bg:#05070a; --p:#f8fafc; --s:#94a3b8; --s2:#64748b;
-  --vio:#7c5cff; --cyan:#22d3ee;
+  --a:#7c5cff; --b:#22d3ee;
+  --aT:rgba(124,92,255,.20); --aB:rgba(124,92,255,.42); --aSoft:rgba(124,92,255,.16); --aG:rgba(124,92,255,.35);
+  --bT:rgba(34,211,238,.13); --bB:rgba(34,211,238,.42); --bT2:rgba(34,211,238,.08); --bG:rgba(34,211,238,.28);
   --glass:rgba(255,255,255,.05); --glass2:rgba(255,255,255,.04);
   --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.14);
 }
+body.theme-cyber{
+  --a:#00f0ff; --b:#ff2bd6;
+  --aT:rgba(0,240,255,.15); --aB:rgba(0,240,255,.5); --aSoft:rgba(0,240,255,.13); --aG:rgba(0,240,255,.30);
+  --bT:rgba(255,43,214,.12); --bB:rgba(255,43,214,.5); --bT2:rgba(255,43,214,.08); --bG:rgba(255,43,214,.26);
+  --bg:#020308; --p:#eafcff; --s:#7fb0bf; --s2:#4f7380;
+  --glass:rgba(0,240,255,.05); --glass2:rgba(0,240,255,.04);
+  --line:rgba(0,240,255,.13); --line2:rgba(0,240,255,.24);
+  background-image:
+    radial-gradient(900px 600px at -10% -10%, rgba(0,240,255,.14), transparent 60%),
+    radial-gradient(1000px 700px at 110% 110%, rgba(255,43,214,.13), transparent 60%),
+    repeating-linear-gradient(0deg, rgba(0,240,255,.03) 0 1px, transparent 1px 46px),
+    repeating-linear-gradient(90deg, rgba(0,240,255,.03) 0 1px, transparent 1px 46px);
+}
+body.theme-cyber::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:200;background:repeating-linear-gradient(0deg,rgba(0,0,0,.12) 0 1px,transparent 1px 3px);opacity:.5}
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
 body{
@@ -40,14 +56,14 @@ body{
   overscroll-behavior-y:contain;
   font-variant-numeric:tabular-nums;
 }
-::selection{background:rgba(124,92,255,.4)}
-:focus-visible{outline:2px solid rgba(124,92,255,.65);outline-offset:2px;border-radius:8px}
+::selection{background:var(--aB)}
+:focus-visible{outline:2px solid var(--aB);outline-offset:2px;border-radius:8px}
 button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer;transition:transform .1s}
 button:active{transform:scale(.98)}
 input,select,textarea{font-family:inherit;font-size:14px;color:var(--p);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:14px;padding:10px 13px;width:100%;outline:none;transition:border .15s, box-shadow .15s}
-input:focus,select:focus,textarea:focus{border-color:rgba(124,92,255,.6);box-shadow:0 0 0 3px rgba(124,92,255,.18)}
+input:focus,select:focus,textarea:focus{border-color:var(--aB);box-shadow:0 0 0 3px var(--aSoft)}
 select option{background:#0b0e14}
-input[type=checkbox]{width:auto;accent-color:#7c5cff}
+input[type=checkbox]{width:auto;accent-color:var(--a)}
 label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--s);display:block;margin-bottom:5px}
 ::-webkit-scrollbar{width:8px;height:8px}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:8px}
@@ -55,18 +71,23 @@ label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:upperca
 .glass{background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-radius:24px;box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 20px 50px -24px rgba(0,0,0,.65)}
 .glass-sm{background:var(--glass2);border:1px solid var(--line);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
 .card-hover{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
-.card-hover:hover{transform:translateY(-3px);border-color:rgba(124,92,255,.4);box-shadow:0 18px 44px -20px rgba(124,92,255,.4)}
-.grad{background:linear-gradient(135deg,#7c5cff,#22d3ee);-webkit-background-clip:text;background-clip:text;color:transparent}
-.grad-bg{background:linear-gradient(135deg,#7c5cff,#22d3ee);color:#fff}
+.card-hover:hover{transform:translateY(-3px);border-color:var(--aB);box-shadow:0 18px 44px -20px var(--aB)}
+.grad{background:linear-gradient(135deg,var(--a),var(--b));-webkit-background-clip:text;background-clip:text;color:transparent}
+.grad-bg{background:linear-gradient(135deg,var(--a),var(--b));color:#fff}
 .grad-border{position:relative;border:1px solid transparent;background:
   linear-gradient(rgba(255,255,255,.04),rgba(255,255,255,.04)) padding-box,
-  linear-gradient(135deg,rgba(124,92,255,.65),rgba(34,211,238,.65)) border-box}
+  linear-gradient(135deg,var(--aB),var(--bB)) border-box}
+.grad-border::before,.grad-border::after{content:'';position:absolute;width:14px;height:14px;border:2px solid var(--a);opacity:0;transition:opacity .2s}
+.grad-border::before{top:-2px;left:-2px;border-right:none;border-bottom:none}
+.grad-border::after{bottom:-2px;right:-2px;border-left:none;border-top:none}
+body.theme-cyber .grad-border::before,body.theme-cyber .grad-border::after{opacity:.9}
+body.theme-cyber .grad{text-shadow:0 0 16px var(--aB)}
 .fade-in{animation:fadeIn .3s ease both}
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:20px;padding:11px 18px;font-size:13.5px;font-weight:700;border:1px solid var(--line2);background:rgba(255,255,255,.05);transition:filter .15s,transform .1s}
-.btn:hover{border-color:rgba(124,92,255,.55)}
+.btn:hover{border-color:var(--aB)}
 .btn:active{transform:scale(.98)}
-.btn-g{background:linear-gradient(135deg,#7c5cff,#22d3ee);color:#fff;border:none;box-shadow:0 10px 26px -10px rgba(124,92,255,.7)}
+.btn-g{background:linear-gradient(135deg,var(--a),var(--b));color:#fff;border:none;box-shadow:0 10px 26px -10px var(--aB)}
 .btn-g:hover{filter:brightness(1.1)}
 .btn-sm{padding:7px 13px;font-size:12px;border-radius:16px}
 .btn-ic{width:38px;height:38px;padding:0;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--s)}
@@ -82,7 +103,7 @@ label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:upperca
 .side{width:250px;flex-shrink:0;border-right:1px solid var(--line);background:rgba(255,255,255,.03);backdrop-filter:blur(20px);position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:max(22px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-left)) 22px 14px}
 .nav-b{display:flex;align-items:center;gap:12px;width:100%;border-radius:20px;padding:11px 15px;font-size:14px;font-weight:600;color:var(--s);text-align:left;transition:background .15s,color .15s}
 .nav-b:hover{background:rgba(255,255,255,.05);color:var(--p)}
-.nav-b.on{background:linear-gradient(135deg,rgba(124,92,255,.18),rgba(34,211,238,.10));color:var(--p);border:1px solid rgba(124,92,255,.3)}
+.nav-b.on{background:linear-gradient(135deg,var(--aT),var(--bT));color:var(--p);border:1px solid var(--aB)}
 .bnav{position:fixed;left:0;right:0;bottom:0;z-index:50;display:grid;grid-template-columns:repeat(5,1fr);background:rgba(5,7,10,.85);backdrop-filter:blur(20px);border-top:1px solid var(--line);padding-bottom:max(env(safe-area-inset-bottom),6px)}
 .bnav button{height:62px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:600;color:var(--s2)}
 .bnav button.on{color:var(--p)}
@@ -100,15 +121,15 @@ label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:upperca
 .kpi{padding:16px;border-radius:24px}
 .kpi .v{font-size:clamp(17px,5.4vw,23px);font-weight:800;letter-spacing:-.02em;margin-top:4px}
 .kpi .l{font-size:11.5px;color:var(--s);font-weight:600;margin-top:1px}
-.ic-box{width:38px;height:38px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(124,92,255,.22),rgba(34,211,238,.12));border:1px solid rgba(124,92,255,.3);color:#a78bfa}
+.ic-box{width:38px;height:38px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:var(--aT);border:1px solid var(--aB);color:var(--a)}
 
 /* rows & lists */
 .row-i{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
 .row-i:last-child{border-bottom:none}
-.av{width:40px;height:40px;border-radius:99px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff;flex-shrink:0;background:linear-gradient(135deg,#7c5cff,#22d3ee)}
+.av{width:40px;height:40px;border-radius:99px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff;flex-shrink:0;background:linear-gradient(135deg,var(--a),var(--b))}
 .av.sm{width:34px;height:34px;font-size:11px}
 .chip{border-radius:99px;padding:7px 14px;font-size:12px;font-weight:700;border:1px solid var(--line);color:var(--s)}
-.chip.on{background:linear-gradient(135deg,rgba(124,92,255,.25),rgba(34,211,238,.15));border-color:rgba(124,92,255,.5);color:var(--p)}
+.chip.on{background:linear-gradient(135deg,var(--aT),var(--bT));border-color:var(--aB);color:var(--p)}
 .tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
 
 /* modal / toast / overlay */
@@ -118,23 +139,23 @@ label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:upperca
 .modal-f{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px;border-top:1px solid var(--line)}
 #toast-root{position:fixed;bottom:calc(84px + env(safe-area-inset-bottom));right:calc(14px + env(safe-area-inset-right));z-index:120;display:flex;flex-direction:column;gap:8px}
 @media(min-width:1024px){#toast-root{bottom:20px}}
-.toast{background:rgba(13,17,26,.95);border:1px solid rgba(124,92,255,.45);border-radius:18px;padding:11px 16px;font-size:13px;font-weight:600;animation:fadeIn .25s ease}
+.toast{background:rgba(13,17,26,.95);border:1px solid var(--aB);border-radius:18px;padding:11px 16px;font-size:13px;font-weight:600;animation:fadeIn .25s ease}
 
 /* rest overlay */
 .rest-ov{position:fixed;inset:0;z-index:100;background:rgba(2,4,8,.86);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center}
 .preset{padding:6px 13px;border-radius:99px;border:1px solid var(--line);font-size:12px;font-weight:700;color:var(--s)}
-.preset.on{background:linear-gradient(135deg,rgba(124,92,255,.3),rgba(34,211,238,.2));border-color:rgba(124,92,255,.55);color:var(--p)}
+.preset.on{background:linear-gradient(135deg,var(--aT),var(--bT));border-color:var(--aB);color:var(--p)}
 
 /* player */
 .video-zone{position:relative;border-radius:24px;overflow:hidden;aspect-ratio:16/10;display:flex;align-items:center;justify-content:center;
-  background:radial-gradient(600px 300px at 20% 0%, rgba(124,92,255,.35), transparent 60%),
-             radial-gradient(500px 300px at 90% 100%, rgba(34,211,238,.28), transparent 60%),
+  background:radial-gradient(600px 300px at 20% 0%, var(--aG), transparent 60%),
+             radial-gradient(500px 300px at 90% 100%, var(--bG), transparent 60%),
              linear-gradient(160deg,#0b0e18,#05070a);
   border:1px solid var(--line)}
 .video-zone .bars{display:none;align-items:flex-end;gap:4px;height:34px}
 .video-zone.playing .bars{display:flex}
 .video-zone.playing .vplay{display:none}
-.bars i{width:6px;border-radius:4px;background:linear-gradient(180deg,#7c5cff,#22d3ee);animation:eq 1s ease-in-out infinite}
+.bars i{width:6px;border-radius:4px;background:linear-gradient(180deg,var(--a),var(--b));animation:eq 1s ease-in-out infinite}
 .bars i:nth-child(2){animation-delay:.15s}.bars i:nth-child(3){animation-delay:.3s}.bars i:nth-child(4){animation-delay:.45s}.bars i:nth-child(5){animation-delay:.6s}
 @keyframes eq{0%,100%{height:10px}50%{height:34px}}
 .vplay{width:64px;height:64px;border-radius:99px;display:flex;align-items:center;justify-content:center;background:rgba(5,7,10,.55);border:1px solid var(--line2);backdrop-filter:blur(8px);color:#fff}
@@ -142,28 +163,28 @@ label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:upperca
 .set-row:last-child{border-bottom:none}
 .set-done .set-name{color:var(--s2);text-decoration:line-through}
 .check{width:36px;height:36px;border-radius:14px;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;color:var(--s2);flex-shrink:0}
-.set-done .check{background:linear-gradient(135deg,#7c5cff,#22d3ee);color:#fff;border:none}
+.set-done .check{background:linear-gradient(135deg,var(--a),var(--b));color:#fff;border:none}
 .set-num{width:30px;height:30px;border-radius:12px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
 .ex-chip{flex-shrink:0;border-radius:18px;padding:9px 14px;border:1px solid var(--line);font-size:12px;font-weight:700;color:var(--s);white-space:nowrap}
-.ex-chip.on{background:linear-gradient(135deg,rgba(124,92,255,.25),rgba(34,211,238,.15));border-color:rgba(124,92,255,.5);color:var(--p)}
+.ex-chip.on{background:linear-gradient(135deg,var(--aT),var(--bT));border-color:var(--aB);color:var(--p)}
 .ex-chip.done{color:var(--cyan)}
 
 /* toggle */
 .tg{width:46px;height:26px;border-radius:99px;background:rgba(255,255,255,.1);position:relative;transition:background .2s;flex-shrink:0}
 .tg::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:99px;background:#fff;transition:left .2s}
-.tg.on{background:linear-gradient(135deg,#7c5cff,#22d3ee)}
+.tg.on{background:linear-gradient(135deg,var(--a),var(--b))}
 .tg.on::after{left:23px}
 
 /* pro card */
-.pro-card{position:relative;overflow:hidden;border-radius:26px;padding:22px;background:linear-gradient(135deg,#7c5cff,#22d3ee);color:#fff}
+.pro-card{position:relative;overflow:hidden;border-radius:26px;padding:22px;background:linear-gradient(135deg,var(--a),var(--b));color:#fff}
 .pro-card::after{content:'';position:absolute;top:-60%;left:-30%;width:60%;height:220%;transform:rotate(20deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);animation:shine 3.5s ease-in-out infinite}
 @keyframes shine{0%,60%{left:-40%}100%{left:130%}}
 
 /* schedule blocks */
 .blk{border-radius:16px;padding:9px 11px;font-size:11.5px;font-weight:700;border:1px solid;margin-top:6px;cursor:pointer}
-.b-p{background:rgba(124,92,255,.16);border-color:rgba(124,92,255,.4)}
-.b-g{background:rgba(34,211,238,.13);border-color:rgba(34,211,238,.4)}
-.b-o{background:linear-gradient(135deg,rgba(124,92,255,.20),rgba(34,211,238,.14));border-color:rgba(34,211,238,.45)}
+.b-p{background:var(--aT);border-color:var(--aB)}
+.b-g{background:var(--bT);border-color:var(--bB)}
+.b-o{background:linear-gradient(135deg,var(--aT),var(--bT));border-color:var(--bB)}
 .b-r{background:rgba(100,116,139,.12);border-color:rgba(100,116,139,.3);color:var(--s2)}
 .week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
 @media(max-width:1023px){.week-grid{grid-template-columns:1fr}}
@@ -171,13 +192,13 @@ label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:upperca
 
 /* workouts constructor */
 .lib-item{display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid var(--line);border-radius:16px;padding:9px 12px;margin-top:7px;cursor:grab;font-size:13px;font-weight:600}
-.lib-item:hover{border-color:rgba(124,92,255,.5);background:rgba(124,92,255,.07)}
+.lib-item:hover{border-color:var(--aB);background:var(--aSoft)}
 .day-card{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:20px;padding:13px}
-.day-card.sel{border-color:rgba(124,92,255,.55);background:linear-gradient(160deg,rgba(124,92,255,.10),rgba(34,211,238,.05))}
-.drag-over{border-color:rgba(34,211,238,.7)!important;background:rgba(34,211,238,.06)!important}
+.day-card.sel{border-color:var(--aB);background:linear-gradient(160deg,var(--aT),var(--bT2))}
+.drag-over{border-color:var(--bB)!important;background:var(--bT2)!important}
 
 /* bar chart */
-.bar{fill:rgba(124,92,255,.4);transition:height .7s cubic-bezier(.2,.8,.2,1),y .7s cubic-bezier(.2,.8,.2,1)}
+.bar{fill:var(--a);opacity:.42;transition:height .7s cubic-bezier(.2,.8,.2,1),y .7s cubic-bezier(.2,.8,.2,1)}
 .bar.last{fill:url(#bg-grad)}
 .typing i{width:5px;height:5px;border-radius:99px;background:var(--s);display:inline-block;animation:tp 1s infinite}
 .typing i:nth-child(2){animation-delay:.15s}
@@ -186,6 +207,24 @@ label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:upperca
 table.tbl{width:100%;border-collapse:collapse;font-size:13px}
 .tbl td{padding:10px 6px;border-bottom:1px solid var(--line)}
 .tbl tr:last-child td{border-bottom:none}
+
+/* theme helpers */
+.st-act{color:#67e8f9;border-color:rgba(34,211,238,.4);background:rgba(34,211,238,.08)}
+.st-ren,.st-pend,.badge-ai{color:#c4b5fd;border-color:rgba(124,92,255,.45);background:rgba(124,92,255,.10)}
+.st-new{color:#cbd5e1;border-color:rgba(148,163,184,.35);background:rgba(148,163,184,.08)}
+body.theme-cyber .st-act{color:var(--a);border-color:var(--aB);background:var(--aSoft)}
+body.theme-cyber .st-ren,body.theme-cyber .st-pend,body.theme-cyber .badge-ai{color:#ff9df0;border-color:var(--bB);background:var(--bT)}
+.bub-ai{background:var(--aSoft)!important}
+.bub-me{background:linear-gradient(135deg,var(--aT),var(--bT))!important}
+.on-dot{color:var(--b)}
+.pbar-fill{background:linear-gradient(90deg,var(--a),var(--b))}
+.dot-a{background:var(--a)}
+.ai-tip{color:var(--b)}
+body.theme-cyber .glass{box-shadow:inset 0 1px 0 rgba(0,240,255,.09), 0 0 30px -12px rgba(0,240,255,.28)}
+body.theme-cyber .glass-sm{box-shadow:inset 0 1px 0 rgba(0,240,255,.08)}
+body.theme-cyber .btn-g{box-shadow:0 0 24px -6px var(--bB)}
+body.theme-cyber .kpi .v,body.theme-cyber .timer-val b{font-family:'Share Tech Mono',monospace;letter-spacing:0}
+body.theme-cyber .side .grad{font-family:'Orbitron','Manrope',sans-serif;letter-spacing:.1em}
 
 /* --- адаптив: от 320px до ультрашироких --- */
 @media(max-width:640px){
@@ -275,7 +314,8 @@ function seed(){
   };
 }
 function load(){ try{ const r=localStorage.getItem(LS); DB=r?JSON.parse(r):null; }catch(e){ DB=null; } if(!DB||!DB.me){ DB=seed(); save(); } S.role=DB.role||'client';
-  if(!DB.aiChat) DB.aiChat=[]; if(!DB.exHistory) DB.exHistory=[]; }
+  if(!DB.aiChat) DB.aiChat=[]; if(!DB.exHistory) DB.exHistory=[]; if(!DB.settings.theme) DB.settings.theme='classic';
+  applyTheme(); }
 function save(){ try{ localStorage.setItem(LS,JSON.stringify(DB)); }catch(e){} }
 
 /* ---------- helpers ---------- */
@@ -306,26 +346,28 @@ function countUp(el){
 }
 function runCounters(){ document.querySelectorAll('[data-count]').forEach(countUp); }
 function ring(p,size,sw){
-  const r=(size-sw)/2, C=2*Math.PI*r, off=C*(1-Math.min(1,Math.max(0,p)));
-  return '<div class="ringw" style="width:'+size+'px;height:'+size+'px"><svg width="'+size+'" height="'+size+'"><defs><linearGradient id="rg'+size+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c5cff"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>'+
+  const r=(size-sw)/2, C=2*Math.PI*r, off=C*(1-Math.min(1,Math.max(0,p))), tc2=tc();
+  return '<div class="ringw" style="width:'+size+'px;height:'+size+'px"><svg width="'+size+'" height="'+size+'"><defs><linearGradient id="rg'+size+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+tc2.a+'"/><stop offset="1" stop-color="'+tc2.b+'"/></linearGradient></defs>'+
   '<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="'+sw+'"/>'+
   '<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="url(#rg'+size+')" stroke-width="'+sw+'" stroke-linecap="round" stroke-dasharray="'+C.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'" transform="rotate(-90 '+size/2+' '+size/2+')"/></svg>'+
   '<div class="val"><b style="font-size:'+(size/4.6)+'px">'+Math.round(p*100)+'%</b></div></div>';
 }
-function lineChart(data,w,h){
+function lineChart(data, w, h){
   if(data.length<2) return '';
+  const cc=tc();
   const vs=data.map(p=>p.v), min=Math.min.apply(null,vs), max=Math.max.apply(null,vs), span=(max-min)||1;
   const px=30,py=14,iw=w-px-10,ih=h-py-20;
   const pts=data.map((p,i)=>[px+iw*i/(data.length-1), py+ih*(1-(p.v-min)/span)]);
   const path=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
   const area=path+' L'+pts[pts.length-1][0].toFixed(1)+' '+(py+ih)+' L'+pts[0][0].toFixed(1)+' '+(py+ih)+' Z';
   let dots='',labels='';
-  data.forEach((p,i)=>{ dots+='<circle cx="'+pts[i][0].toFixed(1)+'" cy="'+pts[i][1].toFixed(1)+'" r="3.4" fill="#22d3ee"><title>'+p.d+': '+p.v+' кг</title></circle>';
+  data.forEach((p,i)=>{ dots+='<circle cx="'+pts[i][0].toFixed(1)+'" cy="'+pts[i][1].toFixed(1)+'" r="3.4" fill="'+cc.b+'"><title>'+p.d+': '+p.v+' кг</title></circle>';
     if(i%Math.ceil(data.length/5)===0||i===data.length-1) labels+='<text x="'+pts[i][0].toFixed(1)+'" y="'+(h-4)+'" text-anchor="middle" font-size="10" fill="#64748b">'+p.d+'</text>'; });
   let grid=''; for(let g=0;g<3;g++){ const y=py+ih*g/2, v=max-(max-min)*g/2; grid+='<line x1="'+px+'" y1="'+y+'" x2="'+(w-10)+'" y2="'+y+'" stroke="rgba(255,255,255,.06)"/><text x="'+(px-4)+'" y="'+(y+3)+'" text-anchor="end" font-size="10" fill="#64748b">'+v.toFixed(1)+'</text>'; }
-  return '<svg viewBox="0 0 '+w+' '+h+'" style="width:100%;height:auto;display:block"><defs><linearGradient id="lg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7c5cff" stop-opacity=".35"/><stop offset="1" stop-color="#7c5cff" stop-opacity="0"/></linearGradient></defs>'+grid+'<path d="'+area+'" fill="url(#lg1)"/><path d="'+path+'" fill="none" stroke="#7c5cff" stroke-width="2.4" stroke-linejoin="round"/>'+dots+labels+'</svg>';
+  return '<svg viewBox="0 0 '+w+' '+h+'" style="width:100%;height:auto;display:block"><defs><linearGradient id="lg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+cc.a+'" stop-opacity=".35"/><stop offset="1" stop-color="'+cc.a+'" stop-opacity="0"/></linearGradient></defs>'+grid+'<path d="'+area+'" fill="url(#lg1)"/><path d="'+path+'" fill="none" stroke="'+cc.a+'" stroke-width="2.4" stroke-linejoin="round"/>'+dots+labels+'</svg>';
 }
 function barChart(data,w,h){
+  const cc=tc();
   const max=Math.max.apply(null,data.map(d=>d.v))||1, px=34,py=12,iw=w-px-8,ih=h-py-20, n=data.length;
   const bw=Math.min(26,iw/n*.55);
   let s='';
@@ -335,7 +377,7 @@ function barChart(data,w,h){
     if(i%2===0||i===n-1) s+='<text x="'+x.toFixed(1)+'" y="'+(h-4)+'" text-anchor="middle" font-size="10" fill="#64748b">'+d.m+'</text>';
   });
   let grid=''; for(let g=0;g<3;g++){ const y=py+ih*g/2, v=max*(1-g/2); grid+='<line x1="'+px+'" y1="'+y+'" x2="'+(w-8)+'" y2="'+y+'" stroke="rgba(255,255,255,.06)"/><text x="'+(px-4)+'" y="'+(y+3)+'" text-anchor="end" font-size="10" fill="#64748b">'+Math.round(v/1000)+'k</text>'; }
-  return '<svg id="barchart" viewBox="0 0 '+w+' '+h+'" style="width:100%;height:auto;display:block"><defs><linearGradient id="bg-grad" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7c5cff"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>'+grid+s+'</svg>';
+  return '<svg id="barchart" viewBox="0 0 '+w+' '+h+'" style="width:100%;height:auto;display:block"><defs><linearGradient id="bg-grad" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="'+cc.a+'"/><stop offset="1" stop-color="'+cc.b+'"/></linearGradient></defs>'+grid+s+'</svg>';
 }
 function animateBars(){ setTimeout(()=>{ document.querySelectorAll('#barchart .bar').forEach((b,i)=>{ setTimeout(()=>{ b.setAttribute('height',b.dataset.h); b.setAttribute('y',b.dataset.y); }, i*45); }); },60); }
 
@@ -357,7 +399,7 @@ function rtAdd(){ RT.left+=15; RT.total=Math.max(RT.total,RT.left); paintRT(); }
 function paintRT(){
   const svg=document.getElementById('rt-ring'); if(!svg) return;
   const C=2*Math.PI*54, frac=RT.total?RT.left/RT.total:0;
-  svg.innerHTML='<circle cx="65" cy="65" r="54" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="10"/><circle cx="65" cy="65" r="54" fill="none" stroke="#22d3ee" stroke-width="10" stroke-linecap="round" stroke-dasharray="'+(C*frac).toFixed(1)+' '+C.toFixed(1)+'" transform="rotate(-90 65 65)"/>';
+  svg.innerHTML='<circle cx="65" cy="65" r="54" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="10"/><circle cx="65" cy="65" r="54" fill="none" stroke="'+tc().b+'" stroke-width="10" stroke-linecap="round" stroke-dasharray="'+(C*frac).toFixed(1)+' '+C.toFixed(1)+'" transform="rotate(-90 65 65)"/>';
   document.getElementById('rt-val').textContent=Math.ceil(RT.left);
 }
 function rtHTML(){
@@ -373,6 +415,8 @@ function rtHTML(){
 /* ---------- FitPWA AI engine ---------- */
 const COACH_REPLIES=['Отлично! Держи темп 💪','Записал, скорректируем план на неделю','Так и планировал. Отдых — 90 секунд между подходами','Молодец! Завтра ноги — не забудь про разминку','Хорошо, посмотрим на замерах в конце недели 🔥'];
 function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+function tc(){ const cs=getComputedStyle(document.body); return { a:(cs.getPropertyValue('--a')||'#7c5cff').trim(), b:(cs.getPropertyValue('--b')||'#22d3ee').trim() }; }
+function applyTheme(){ document.body.classList.toggle('theme-cyber', DB.settings.theme==='cyber'); }
 function aiCtx(){
   const w=DB.weights, cur=w[w.length-1].v, start=w[0].v;
   const weeks=Math.max(1,Math.round((w.length-1)*5/7));
@@ -442,8 +486,8 @@ function aiSuggest(e){
 
 /* ---------- shared shells ---------- */
 function roleBtn(){ return '<button class="btn btn-sm grad-border" onclick="A.switchRole()" title="Переключить режим">'+ic('repeat')+'<span class="rl">'+(S.role==='client'?'Режим тренера':'Режим клиента')+'</span></button>'; }
-const TYPE={ P:{c:'#7c5cff',n:'Персональная'}, G:{c:'#22d3ee',n:'Групповая'}, O:{c:'linear-gradient(135deg,#7c5cff,#22d3ee)',n:'Онлайн'}, R:{c:'#64748b',n:'Отдых'} };
-function tdot(t){ return '<span class="dot" style="background:'+TYPE[t].c+'"></span>'; }
+const TYPE=t=>{ const c=tc(); const m={ P:{c:c.a,n:'Персональная'}, G:{c:c.b,n:'Групповая'}, O:{c:'linear-gradient(135deg,'+c.a+','+c.b+')',n:'Онлайн'}, R:{c:'#64748b',n:'Отдых'} }; return m[t]||m.P; };
+function tdot(t){ return '<span class="dot" style="background:'+TYPE(t).c+'"></span>'; }
 function clientShell(active,inner){
   const nav=[['home','Главная','home'],['schedule','Расписание','calendar-days'],['progress','Прогресс','trending-up'],['chat','Чат','message-circle'],['profile','Профиль','user']];
   return '<div class="mx-auto" style="max-width:520px"><div class="fade-in">'+inner+'</div></div>'+
@@ -485,7 +529,7 @@ function vHome(){
    '<div class="px-4 pb-28 pt-4 space-y-3">'+
     '<div class="grad-border p-5" style="border-radius:26px">'+
      '<div class="flex items-center gap-4"><div class="flex-1"><div class="tiny muted mb-1">Сегодняшняя тренировка</div><b style="font-size:17px">'+WORKOUT.name+'</b><div class="small muted mt-1">'+WORKOUT.ex.length+' упражнения · ~55 мин</div>'+
-     '<div class="flex items-center gap-2 mt-3 flex-wrap"><button class="btn btn-g" onclick="A.cNav(\'player\')">'+ic('play')+(p>0?'Продолжить':'Начать')+'</button><span class="badge" style="color:#c4b5fd;border-color:rgba(124,92,255,.45)">🔥 '+DB.me.streak+' дн подряд</span></div></div>'+
+     '<div class="flex items-center gap-2 mt-3 flex-wrap"><button class="btn btn-g" onclick="A.cNav(\'player\')">'+ic('play')+(p>0?'Продолжить':'Начать')+'</button><span class="badge st-ren">🔥 '+DB.me.streak+' дн подряд</span></div></div>'+
      ring(p,92,9)+'</div>'+
     '</div>'+
     '<div class="glass-sm px-4 py-3 flex text-center">'+
@@ -494,9 +538,9 @@ function vHome(){
      '<div class="flex-1" style="border-left:1px solid var(--line)"><div class="font-bold grad">'+goalPct+'%</div><div class="tiny muted">до цели</div></div>'+
     '</div>'+
     '<div class="glass p-5"><div class="flex items-center justify-between mb-1"><b class="small">Ближайшие тренировки</b><button class="btn-ic" onclick="A.cNav(\'schedule\')">'+ic('calendar-days','lucide-sm')+'</button></div>'+
-     upcoming.slice(0,2).map(u=>'<div class="row-i">'+tdot(u.t)+'<div class="flex-1"><div class="font-bold small">'+u.n+'</div><div class="tiny muted">'+u.d+' · '+TYPE[u.t].n+'</div></div>'+ic('chevron-right','lucide-sm muted2')+'</div>').join('')+
+     upcoming.slice(0,2).map(u=>'<div class="row-i">'+tdot(u.t)+'<div class="flex-1"><div class="font-bold small">'+u.n+'</div><div class="tiny muted">'+u.d+' · '+TYPE(u.t).n+'</div></div>'+ic('chevron-right','lucide-sm muted2')+'</div>').join('')+
     '</div>'+
-    '<div class="glass p-5"><div class="flex items-center gap-2 mb-2">'+ic('sparkles','lucide-sm')+'<b class="small">AI-инсайт дня</b><span class="badge" style="color:#c4b5fd;border-color:rgba(124,92,255,.4)">AI</span></div><p class="small muted">'+aiInsight().join(' ')+'</p></div>'+
+    '<div class="glass p-5"><div class="flex items-center gap-2 mb-2">'+ic('sparkles','lucide-sm')+'<b class="small">AI-инсайт дня</b><span class="badge badge-ai">AI</span></div><p class="small muted">'+aiInsight().join(' ')+'</p></div>'+
    '</div>'
   );
 }
@@ -518,7 +562,7 @@ function vPlayer(){
     '<div class="glass p-5">'+
      '<div class="flex items-center justify-between"><div><b>'+e.name+'</b><div class="small muted mt-0.5">'+e.sets+' × '+e.reps+' · отдых '+e.rest+' сек</div></div>'+
       '<div class="flex gap-2"><button class="btn-ic" onclick="A.spMove(-1)">'+ic('chevron-left','lucide-sm')+'</button><button class="btn-ic" onclick="A.spMove(1)">'+ic('chevron-right','lucide-sm')+'</button></div></div>'+
-     '<div class="tiny mt-2" style="color:#22d3ee">✦ AI подобрал вес — просто отмечай подходы</div>'+
+     '<div class="tiny mt-2 ai-tip">✦ AI подобрал вес — просто отмечай подходы</div>'+
      '<div class="mt-2">'+Array.from({length:e.sets}).map((_,si)=>
        '<div class="set-row'+(done[si]?' set-done':'')+'" style="cursor:pointer" onclick="A.spSet('+i+','+si+')">'+
        '<span class="set-num">'+(si+1)+'</span>'+
@@ -561,7 +605,7 @@ function vProgress(){
   const goal=DB.goalWeight, prog=Math.max(0,Math.min(1,(start-cur)/(start-goal)));
   const sil=(label,sub,after)=>'<div class="glass-sm p-4 text-center flex-1">'+
     '<svg viewBox="0 0 60 100" style="height:110px;margin:0 auto;display:block">'+
-     (after?'<defs><linearGradient id="sg'+(after?'a':'b')+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c5cff"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>':'')+
+     (after?'<defs><linearGradient id="sg'+(after?'a':'b')+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+tc().a+'"/><stop offset="1" stop-color="'+tc().b+'"/></linearGradient></defs>':'')+
      '<path d="M30 6 a7 7 0 1 1 -0.1 0 M30 20 c-8 0 -12 5 -13 12 l-3 18 5 1 3 -14 1 22 -2 34 6 0 3 -30 3 30 6 0 -2 -34 1 -22 3 14 5 -1 -3 -18 c-1 -7 -5 -12 -13 -12 z" fill="'+(after?'url(#sga)':'rgba(148,163,184,.35)')+'"/>'+
     '</svg>'+
     '<div class="small font-bold mt-2">'+label+'</div><div class="tiny muted">'+sub+'</div></div>';
@@ -575,7 +619,7 @@ function vProgress(){
       '<div><div class="tiny muted">Изменение</div><b class="grad">'+(delta>0?'+':'')+delta+' кг</b></div>'+
       '<div><div class="tiny muted">Цель</div><b>'+goal+' кг</b></div>'+
      '</div>'+
-     '<div class="mt-3"><div class="flex justify-between tiny muted mb-1"><span>Прогресс к цели</span><span>'+Math.round(prog*100)+'%</span></div><div style="height:7px;border-radius:99px;background:rgba(255,255,255,.08)"><div style="height:100%;width:'+Math.round(prog*100)+'%;border-radius:99px;background:linear-gradient(90deg,#7c5cff,#22d3ee)"></div></div></div>'+
+     '<div class="mt-3"><div class="flex justify-between tiny muted mb-1"><span>Прогресс к цели</span><span>'+Math.round(prog*100)+'%</span></div><div style="height:7px;border-radius:99px;background:rgba(255,255,255,.08)"><div class="pbar-fill" style="height:100%;width:'+Math.round(prog*100)+'%;border-radius:99px"></div></div></div>'+
     '</div>'+
     '<div class="glass p-5"><div class="flex items-center justify-between mb-1"><b>Замеры тела</b><button class="btn btn-sm" onclick="A.measModal()">'+ic('plus','lucide-sm')+'Замер</button></div>'+
      Object.entries(DB.measures).map(([k,v])=>'<div class="row-i"><div class="flex-1 font-semibold small">'+k+'</div><b>'+v+' см</b></div>').join('')+
@@ -591,14 +635,14 @@ function vChat(){
   const ai=S.chatMode==='ai';
   const thread=ai?DB.aiChat:DB.chat;
   const chips=['Почему вес стоит?','Что съесть после зала?','План на неделю','Как быстрее восстановиться?','Нет мотивации 🙁'];
-  const msgs=(ai&&thread.length===0?'<div><div class="small" style="background:rgba(124,92,255,.08);border:1px solid var(--line);border-radius:18px;padding:9px 13px">Привет! Я FitPWA AI 🙌 Вижу твой прогресс: '+aiCtx().cur+' кг, streak '+aiCtx().streak+' дн. Спроси про питание, план или восстановление — или жми на подсказки ниже.</div></div>':'')+thread.map(m=>{
-    if(m.who==='ai-typing') return '<div class="typing" style="max-width:60%"><div class="small" style="background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:18px;padding:11px 15px;display:inline-flex;gap:4px;align-items:center"><i></i><i></i><i></i></div></div>';
-    return '<div class="'+(m.who==='me'?'ml-auto':'')+'" style="max-width:82%"><div class="small" style="background:'+(m.who==='me'?'linear-gradient(135deg,rgba(124,92,255,.35),rgba(34,211,238,.22))':ai?'rgba(124,92,255,.08)':'rgba(255,255,255,.06)')+';border:1px solid var(--line);border-radius:18px;padding:9px 13px;white-space:pre-wrap">'+esc(m.txt)+'</div><div class="tiny muted2 mt-0.5 text-right">'+m.t+'</div></div>';
+  const msgs=(ai&&thread.length===0?'<div><div class="small bub-ai" style="border:1px solid var(--line);border-radius:18px;padding:9px 13px">Привет! Я FitPWA AI 🙌 Вижу твой прогресс: '+aiCtx().cur+' кг, streak '+aiCtx().streak+' дн. Спроси про питание, план или восстановление — или жми на подсказки ниже.</div></div>':'')+thread.map(m=>{
+    if(m.who==='ai-typing') return '<div class="typing" style="max-width:60%"><div class="small bub-ai" style="border:1px solid var(--line);border-radius:18px;padding:11px 15px;display:inline-flex;gap:4px;align-items:center"><i></i><i></i><i></i></div></div>';
+    return '<div class="'+(m.who==='me'?'ml-auto':'')+'" style="max-width:82%"><div class="small '+(m.who==='me'?'bub-me':ai?'bub-ai':'')+'" style="max-width:82%;border:1px solid var(--line);border-radius:18px;padding:9px 13px;white-space:pre-wrap;background:'+(m.who==='me'?'linear-gradient(135deg,var(--aT),var(--bT))':ai?'var(--aSoft)':'rgba(255,255,255,.06)')+'">'+esc(m.txt)+'</div><div class="tiny muted2 mt-0.5 text-right">'+m.t+'</div></div>';
   }).join('');
   return clientShell('chat',
    '<header class="header">'+
-    (ai?'<div class="av grad-bg">'+ic('sparkles','lucide-sm')+'</div><div class="flex-1"><b>FitPWA AI · ассистент</b><div class="tiny" style="color:#22d3ee">● знает твой прогресс</div></div>'
-       :'<div class="av">'+ 'М' +'</div><div class="flex-1"><b>Марк · тренер</b><div class="tiny" style="color:#22d3ee">● онлайн</div></div>')+
+    (ai?'<div class="av grad-bg">'+ic('sparkles','lucide-sm')+'</div><div class="flex-1"><b>FitPWA AI · ассистент</b><div class="tiny on-dot">● знает твой прогресс</div></div>'
+       :'<div class="av">'+ 'М' +'</div><div class="flex-1"><b>Марк · тренер</b><div class="tiny on-dot">● онлайн</div></div>')+
     roleBtn()+'</header>'+
    '<div class="px-4 pb-28 pt-3">'+
     '<div class="flex gap-2 mb-3"><button class="chip flex-1 text-center'+(!ai?' on':'')+'" onclick="A.chatMode(\'trainer\')">Тренер</button><button class="chip flex-1 text-center flex items-center justify-center gap-1'+(ai?' on':'')+'" onclick="A.chatMode(\'ai\')">'+ic('sparkles','lucide-sm')+'AI-ассистент</button></div>'+
@@ -629,6 +673,7 @@ function vProfile(){
     '</div>'+
     '<div class="glass p-5"><b class="small mb-1 block">Настройки</b>'+
      tg('push','Push-уведомления','bell')+tg('sound','Звук таймера','volume-2')+tg('vibrate','Вибрация','vibrate')+tg('offline','Offline-режим','wifi-off')+
+     '<div class="row-i"><span class="muted">'+ic('zap','lucide-sm')+'</span><div class="flex-1 font-semibold small">Киберпанк-режим</div><button class="tg'+(DB.settings.theme==='cyber'?' on':'')+'" onclick="A.tglTheme()"></button></div>'+
     '</div>'+
     '<p class="tiny muted2 text-center">FitPWA v1.0 · PWA · данные хранятся локально</p>'+
    '</div>'
@@ -661,14 +706,14 @@ function vDash(){
   );
 }
 
-const ST={ 'Активен':'color:#67e8f9;border-color:rgba(34,211,238,.4);background:rgba(34,211,238,.08)', 'Продлить':'color:#c4b5fd;border-color:rgba(124,92,255,.45);background:rgba(124,92,255,.10)', 'Новый':'color:#cbd5e1;border-color:rgba(148,163,184,.35);background:rgba(148,163,184,.08)' };
+const STC={ 'Активен':'st-act', 'Продлить':'st-ren', 'Новый':'st-new' };
 function clientsListHTML(q){
   q=(q||'').toLowerCase();
   const list=DB.tClients.filter(c=>!q||c.name.toLowerCase().includes(q)||c.phone.includes(q));
   return list.map(c=>'<div class="glass-sm p-4 cursor-pointer card-hover" onclick="A.clientInfo(\''+c.id+'\')">'+
      '<div class="flex items-center gap-3"><div class="av">'+c.name.split(' ').map(x=>x[0]).slice(0,2).join('')+'</div>'+
      '<div class="flex-1 min-w-0"><b class="small block truncate">'+esc(c.name)+'</b><div class="tiny muted truncate">'+esc(c.goal)+'</div></div>'+
-     '<span class="badge" style="'+ST[c.status]+'">'+c.status+'</span></div>'+
+     '<span class="badge '+STC[c.status]+'">'+c.status+'</span></div>'+
      '<div class="flex justify-between mt-3 tiny muted"><span>'+ic('calendar-days','lucide-sm')+' '+c.next+'</span><span>'+money(c.fee)+'/мес</span></div>'+
     '</div>').join('')+
     (list.length?'':'<div class="glass-sm p-6 text-center muted small">Никого не найдено</div>');
@@ -727,7 +772,7 @@ function peView(){
       PE.days.map((d,di)=>'<div class="day-card'+(di===S.peDay?' sel':'')+'" ondragover="event.preventDefault();this.classList.add(\'drag-over\')" ondragleave="this.classList.remove(\'drag-over\')" ondrop="A.peDrop(event,'+di+')">'+
        '<div class="flex items-center justify-between"><b class="small cursor-grab" draggable="true" ondragstart="A.peDayDrag('+di+')">'+esc(d.title)+'</b>'+
        '<div class="flex gap-1"><button class="btn-ic" style="width:28px;height:28px" onclick="A.peSelect('+di+')" title="Выбрать день">'+ic('target','lucide-sm')+'</button><button class="btn-ic" style="width:28px;height:28px" onclick="A.peDelDay('+di+')">'+ic('x','lucide-sm')+'</button></div></div>'+
-       (d.ex.length?d.ex.map((x,xi)=>'<div class="row-i" style="padding:6px 0"><span class="dot" style="background:#7c5cff"></span><span class="small flex-1">'+esc(x)+'</span><button class="btn-ic" style="width:24px;height:24px" onclick="A.peDelEx('+di+','+xi+')">'+ic('x','lucide-sm')+'</button></div>').join(''):'<p class="tiny muted2 mt-2">Перетащи упражнения сюда</p>')+
+       (d.ex.length?d.ex.map((x,xi)=>'<div class="row-i" style="padding:6px 0"><span class="dot dot-a"></span><span class="small flex-1">'+esc(x)+'</span><button class="btn-ic" style="width:24px;height:24px" onclick="A.peDelEx('+di+','+xi+')">'+ic('x','lucide-sm')+'</button></div>').join(''):'<p class="tiny muted2 mt-2">Перетащи упражнения сюда</p>')+
       '</div>').join('')+
      '</div>'+
      '<div class="glass-sm p-4">'+
@@ -762,7 +807,7 @@ function vTSchedule(){
        '</div>';
      }).join('')+
     '</div>'+
-    '<div class="flex gap-4 mt-4 tiny muted flex-wrap"><span class="flex items-center gap-2"><span class="dot" style="background:'+TYPE.P.c+'"></span>Персональные</span><span class="flex items-center gap-2"><span class="dot" style="background:'+TYPE.G.c+'"></span>Группы</span><span class="flex items-center gap-2"><span class="dot" style="background:'+TYPE.O.c+'"></span>Онлайн</span><span class="flex items-center gap-2"><span class="dot" style="background:'+TYPE.R.c+'"></span>Отдых</span></div>'+
+    '<div class="flex gap-4 mt-4 tiny muted flex-wrap"><span class="flex items-center gap-2"><span class="dot" style="background:'+TYPE('P').c+'"></span>Персональные</span><span class="flex items-center gap-2"><span class="dot" style="background:'+TYPE('G').c+'"></span>Группы</span><span class="flex items-center gap-2"><span class="dot" style="background:'+TYPE('O').c+'"></span>Онлайн</span><span class="flex items-center gap-2"><span class="dot" style="background:'+TYPE('R').c+'"></span>Отдых</span></div>'+
    '</div>'
   );
 }
@@ -781,7 +826,7 @@ function vFinance(){
     '</div>'+
     '<div class="glass p-5"><b class="small">Доход по месяцам</b>'+barChart(m,560,220)+'</div>'+
     '<div class="glass p-5"><b class="small">Последние оплаты</b>'+
-     DB.finance.last.map(p=>'<div class="row-i"><div class="av sm">'+p.n[0]+'</div><div class="flex-1"><div class="font-bold small">'+esc(p.n)+'</div><div class="tiny muted">'+p.d+'</div></div><span class="badge" style="'+(p.s==='Оплачено'?'color:#67e8f9;border-color:rgba(34,211,238,.4);background:rgba(34,211,238,.08)':'color:#c4b5fd;border-color:rgba(124,92,255,.45);background:rgba(124,92,255,.10)')+'">'+p.s+'</span><b>'+money(p.a)+'</b></div>').join('')+
+     DB.finance.last.map(p=>'<div class="row-i"><div class="av sm">'+p.n[0]+'</div><div class="flex-1"><div class="font-bold small">'+esc(p.n)+'</div><div class="tiny muted">'+p.d+'</div></div><span class="badge '+(p.s==='Оплачено'?'st-act':'st-pend')+'">'+p.s+'</span><b>'+money(p.a)+'</b></div>').join('')+
     '</div>'+
    '</div>'
   );
@@ -924,6 +969,7 @@ const A={
 
   /* клиент: профиль */
   tgl(k){ DB.settings[k]=!DB.settings[k]; save(); render(); },
+  tglTheme(){ DB.settings.theme=DB.settings.theme==='cyber'?'classic':'cyber'; save(); applyTheme(); render(); toast(DB.settings.theme==='cyber'?'Киберпанк-режим включён ⚡':'Классическая тема'); },
 
   /* тренер: клиенты */
   clSearch(q){ S.libQ=q; const el=document.getElementById('cl-list'); if(el){ el.innerHTML=clientsListHTML(q); icons(); } },
@@ -944,7 +990,7 @@ const A={
   clientInfo(id){
     const c=DB.tClients.find(x=>x.id===id); if(!c) return;
     openModal(mHead(esc(c.name))+'<div class="modal-b space-y-2">'+
-     '<div class="flex justify-between"><span class="muted small">Статус</span><span class="badge" style="'+ST[c.status]+'">'+c.status+'</span></div>'+
+     '<div class="flex justify-between"><span class="muted small">Статус</span><span class="badge '+STC[c.status]+'">'+c.status+'</span></div>'+
      '<div class="flex justify-between"><span class="muted small">Цель</span><b class="small">'+esc(c.goal)+'</b></div>'+
      '<div class="flex justify-between"><span class="muted small">Программа</span><b class="small">'+esc(c.program)+'</b></div>'+
      '<div class="flex justify-between"><span class="muted small">Следующая сессия</span><b class="small">'+c.next+'</b></div>'+
