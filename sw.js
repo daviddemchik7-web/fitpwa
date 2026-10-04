@@ -1,11 +1,11 @@
 /* FitPWA service worker — network-first + runtime cache fallback */
-const CACHE = 'fitpwa-v4';
+const CACHE = 'fitpwa-v5';
 /* Прекэш CDN, чтобы иконки/стили не терялись офлайн */
 const PRECACHE = [
   'https://cdn.tailwindcss.com',
   'https://unpkg.com/lucide@latest/dist/umd/lucide.min.js',
   'https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js',
-  'https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap'
+  'https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Orbitron:wght@700;800&family=Share+Tech+Mono&display=swap'
 ];
 
 self.addEventListener('install', (e) => {
