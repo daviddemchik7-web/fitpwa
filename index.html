@@ -135,6 +135,7 @@ body.theme-cyber .grad{text-shadow:0 0 16px var(--aB)}
 /* modal / toast / overlay */
 .overlay{position:fixed;inset:0;z-index:90;background:rgba(2,4,8,.72);backdrop-filter:blur(6px);display:flex;justify-content:center;align-items:flex-start;padding:max(18px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom));overflow-y:auto}
 .modal{background:rgba(13,17,26,.92);border:1px solid var(--line2);backdrop-filter:blur(22px);border-radius:26px;width:100%;max-width:520px;margin:auto;animation:fadeIn .25s ease both}
+.modal.wide{max-width:780px}
 .modal-b{padding:20px;max-height:70vh;overflow-y:auto}
 .modal-f{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px;border-top:1px solid var(--line)}
 #toast-root{position:fixed;bottom:calc(84px + env(safe-area-inset-bottom));right:calc(14px + env(safe-area-inset-right));z-index:120;display:flex;flex-direction:column;gap:8px}
@@ -381,7 +382,7 @@ function beep(){ try{ const c=new (window.AudioContext||window.webkitAudioContex
 const S={ role:'client', cView:'home', tView:'dash', clientId:null, week:0, selDay:(new Date().getDay()+6)%7, chatId:null, progOpen:null, libGroup:'Грудь', libQ:'' };
 
 /* ---------- modal / toast ---------- */
-function openModal(html){ document.getElementById('modal-root').innerHTML='<div class="overlay" onclick="if(event.target===this)A.closeModal()"><div class="modal">'+html+'</div></div>'; icons(); }
+function openModal(html, wide){ document.getElementById('modal-root').innerHTML='<div class="overlay" onclick="if(event.target===this)A.closeModal()"><div class="modal'+(wide?' wide':'')+'">'+html+'</div></div>'; icons(); }
 function closeModal(){ document.getElementById('modal-root').innerHTML='';
   if(window._pmStream){ try{ window._pmStream.getTracks().forEach(t=>t.stop()); }catch(e){} window._pmStream=null; } }
 function mHead(t){ return '<div class="flex items-center justify-between gap-2 px-5 py-4 border-b" style="border-color:var(--line)"><b>'+t+'</b><button class="btn-ic" onclick="A.closeModal()">'+ic('x')+'</button></div>'; }
@@ -1060,61 +1061,111 @@ const A={
 
   /* скан техники камерой */
   async poseOpen(){
-    openModal(mHead(ic('video')+' Скан техники · бета')+
+    openModal(mHead(ic('video')+' Скан техники · приседания')+
      '<div class="modal-b">'+
       '<div style="position:relative;border-radius:16px;overflow:hidden;background:#000">'+
        '<video id="pm-video" playsinline muted style="width:100%;display:block;transform:scaleX(-1)"></video>'+
        '<canvas id="pm-cv" style="position:absolute;inset:0;width:100%;height:100%"></canvas>'+
+       '<div id="pm-badges" style="position:absolute;top:8px;right:8px;display:flex;flex-direction:column;gap:4px;align-items:flex-end"></div>'+
+       '<div id="pm-status" style="position:absolute;top:8px;left:8px;font-size:11px;font-weight:700;background:rgba(2,4,8,.6);padding:4px 9px;border-radius:8px;color:var(--b)">Инициализация камеры…</div>'+
+       '<div id="pm-hint" style="position:absolute;bottom:8px;left:8px;right:8px;font-size:12px;font-weight:700;text-align:center;background:rgba(2,4,8,.6);padding:6px 10px;border-radius:10px;color:var(--p)">Встань боком к камере, в полный рост</div>'+
       '</div>'+
-      '<div class="flex items-center justify-between mt-3"><div id="pm-status" class="tiny muted">Инициализация камеры и AI-модели…</div><div id="pm-reps" class="grad" style="font-size:30px;font-weight:800">0</div></div>'+
-      '<div id="pm-hint" class="tiny muted mt-1">Встань боком к камере и сделай приседания — AI посчитает повторения и следит за углом колена</div>'+
-     '</div><div class="modal-f"><button class="btn" onclick="A.closeModal()">Закрыть</button></div>');
+      '<div class="flex items-center justify-between mt-3">'+
+       '<div><div class="tiny muted">Приседания · повторений</div><div id="pm-reps" class="grad" style="font-size:34px;font-weight:800;line-height:1">0</div></div>'+
+       '<div style="text-align:center"><div class="tiny muted">Глубина последнего</div><div id="pm-q" style="font-size:20px;font-weight:800">—</div></div>'+
+       '<button class="btn btn-sm" onclick="A.poseFlip()">'+ic('refresh-cw','lucide-sm')+'Камера</button>'+
+      '</div>'+
+     '</div><div class="modal-f"><button class="btn" onclick="A.closeModal()">Закрыть</button></div>', true);
+    window._pmFacing='user';
     try{
       if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia) throw new Error('камера не поддерживается');
-      const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:640}});
-      window._pmStream=stream;
-      const video=document.getElementById('pm-video'); if(!video) return;
-      video.srcObject=stream; await video.play();
-      document.getElementById('pm-status').textContent='Загружаю AI-модель позы…';
-      const vision=await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14');
-      const files=await vision.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm');
-      const pl=await vision.PoseLandmarker.createFromOptions(files,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',delegate:'GPU'},runningMode:'VIDEO',numPoses:1});
-      const st=document.getElementById('pm-status'); if(st) st.textContent='Сканирую — следи за углом колена';
-      const cv=document.getElementById('pm-cv'); const ctx=cv.getContext('2d');
-      const CONS=[[11,12],[11,13],[13,15],[12,14],[14,16],[23,24],[23,25],[25,27],[24,26],[26,28],[11,23],[12,24]];
-      let reps=0, state='up';
-      const loop=()=>{
-        const v=document.getElementById('pm-video'); if(!v){ return; }
-        if(v.readyState>=2){
-          if(cv.width!==v.videoWidth&&v.videoWidth){ cv.width=v.videoWidth; cv.height=v.videoHeight; }
-          const res=pl.detectForVideo(v,performance.now());
-          ctx.clearRect(0,0,cv.width,cv.height);
-          const lm=res.landmarks&&res.landmarks[0];
-          if(lm){
-            const c=tc();
-            ctx.strokeStyle=c.a; ctx.lineWidth=Math.max(2,cv.width/240); ctx.lineCap='round';
-            CONS.forEach(pr=>{ const p1=lm[pr[0]], p2=lm[pr[1]]; ctx.beginPath(); ctx.moveTo(p1.x*cv.width,p1.y*cv.height); ctx.lineTo(p2.x*cv.width,p2.y*cv.height); ctx.stroke(); });
-            ctx.fillStyle=c.b; lm.forEach(p=>{ ctx.beginPath(); ctx.arc(p.x*cv.width,p.y*cv.height,Math.max(3,cv.width/130),0,7); ctx.fill(); });
-            const ang=Math.round(angleDeg(lm[23],lm[25],lm[27]));
-            const hint=document.getElementById('pm-hint'); if(hint) hint.textContent='Угол колена: '+ang+'° '+(ang<110?'— вниз':'— вверх')+' · повторений: '+reps;
-            if(state==='up'&&ang<105) state='down';
-            if(state==='down'&&ang>155){ state='up'; reps++; const el=document.getElementById('pm-reps'); if(el) el.textContent=reps; if(DB.settings.vibrate&&navigator.vibrate) navigator.vibrate(40); }
-          }
-        }
-        requestAnimationFrame(loop);
-      };
-      requestAnimationFrame(loop);
+      await this.pmStart();
     }catch(err){
       const st=document.getElementById('pm-status');
-      if(st) st.textContent='Не удалось: нужны интернет, HTTPS и разрешение на камеру. ('+String(err&&err.message||err).slice(0,70)+')';
+      if(st) st.textContent='Не удалось: нужны интернет, HTTPS и разрешение на камеру';
     }
   },
+  async pmStart(){
+    const st=document.getElementById('pm-status');
+    if(window._pmStream){ try{ window._pmStream.getTracks().forEach(t=>t.stop()); }catch(e){} }
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:window._pmFacing,width:{ideal:720}},audio:false});
+    window._pmStream=stream;
+    const video=document.getElementById('pm-video'); if(!video) return;
+    video.srcObject=stream; await video.play();
+    if(st) st.textContent='Загружаю AI-модель (full)…';
+    if(!window._pmPl){
+      const vision=await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14');
+      const files=await vision.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm');
+      const model='https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task';
+      try{ window._pmPl=await vision.PoseLandmarker.createFromOptions(files,{baseOptions:{modelAssetPath:model,delegate:'GPU'},runningMode:'VIDEO',numPoses:1,minPoseDetectionConfidence:0.5,minTrackingConfidence:0.5}); }
+      catch(e){ window._pmPl=await vision.PoseLandmarker.createFromOptions(files,{baseOptions:{modelAssetPath:model,delegate:'CPU'},runningMode:'VIDEO',numPoses:1}); }
+    }
+    if(st) st.textContent='Сканирую · боком к камере';
+    const cv=document.getElementById('pm-cv'), ctx=cv.getContext('2d');
+    const CONS=[[11,12],[11,13],[13,15],[12,14],[14,16],[23,24],[23,25],[25,27],[27,29],[29,31],[24,26],[26,28],[28,30],[30,32],[11,23],[12,24]];
+    let prev=null, state='up', minKnee=180, reps=0;
+    const smooth=n=>{ if(!prev){ prev=n.map(p=>({x:p.x,y:p.y,v:p.visibility})); return prev; }
+      n.forEach((p,i)=>{ prev[i].x+=(p.x-prev[i].x)*0.55; prev[i].y+=(p.y-prev[i].y)*0.55; prev[i].v=p.visibility; }); return prev; };
+    const loop=()=>{
+      const v=document.getElementById('pm-video'); if(!v){ prev=null; return; }
+      if(v.readyState>=2){
+        if(cv.width!==v.videoWidth&&v.videoWidth){ cv.width=v.videoWidth; cv.height=v.videoHeight; }
+        const res=window._pmPl.detectForVideo(v,performance.now());
+        ctx.clearRect(0,0,cv.width,cv.height);
+        const raw=res.landmarks&&res.landmarks[0];
+        if(raw){
+          const lm=smooth(raw); const c=tc();
+          ctx.save(); ctx.translate(cv.width,0); ctx.scale(-1,1);
+          ctx.strokeStyle=c.a; ctx.lineWidth=Math.max(3,cv.width/200); ctx.lineCap='round';
+          ctx.shadowColor=c.a; ctx.shadowBlur=14;
+          CONS.forEach(pr=>{ const p1=lm[pr[0]], p2=lm[pr[1]]; ctx.beginPath(); ctx.moveTo(p1.x*cv.width,p1.y*cv.height); ctx.lineTo(p2.x*cv.width,p2.y*cv.height); ctx.stroke(); });
+          ctx.shadowBlur=0;
+          ctx.fillStyle=c.b; lm.forEach((p,ix)=>{ if([0,1,2,3,7,8,9,10].indexOf(ix)>=0) return; ctx.beginPath(); ctx.arc(p.x*cv.width,p.y*cv.height,Math.max(4,cv.width/120),0,7); ctx.fill(); });
+          ctx.restore();
+          const L={vis:lm[25].visibility||1,h:lm[23],k:lm[25],a:lm[27]}, R={vis:lm[26].visibility||1,h:lm[24],k:lm[26],a:lm[28]};
+          const knee=Math.round(Math.min(angleDeg(L.h,L.k,L.a),angleDeg(R.h,R.k,R.a)));
+          const tilt=Math.round(Math.abs(Math.atan2((lm[11].x+lm[12].x)/2-(lm[23].x+lm[24].x)/2,(lm[11].y+lm[12].y)/2-(lm[23].y+lm[24].y)/2))*180/Math.PI);
+          const badges=document.getElementById('pm-badges');
+          if(badges) badges.innerHTML='<span style="font-size:10px;font-weight:800;background:rgba(2,4,8,.6);padding:3px 8px;border-radius:8px;color:var(--p)">колено '+knee+'°</span><span style="font-size:10px;font-weight:800;background:rgba(2,4,8,.6);padding:3px 8px;border-radius:8px;color:var(--p)">наклон '+tilt+'°</span>';
+          const hint=document.getElementById('pm-hint');
+          const vis=Math.min(lm[23].visibility||1,lm[25].visibility||1,lm[27].visibility||1);
+          if(vis<0.45){ if(hint) hint.textContent='Не вижу тебя полностью — отойди дальше, чтобы было видно колени и стопы'; }
+          else {
+            if(state==='up'){ if(knee<150) state='down'; minKnee=knee; }
+            else { minKnee=Math.min(minKnee,knee);
+              if(knee>160){ state='up';
+                const q=Math.max(0,Math.min(100,Math.round((160-minKnee)/55*100)));
+                reps++; const el=document.getElementById('pm-reps'); if(el) el.textContent=reps;
+                const qel=document.getElementById('pm-q'); if(qel) qel.textContent=q+'%';
+                if(hint) hint.textContent=q>=85?'💪 Отлично! Глубина '+q+'%':q>=60?'Есть повторение · глубина '+q+'% — сядь глубже':'Малая глубина ('+q+'%) — опускайся до угла ~90°';
+                if(DB.settings.vibrate&&navigator.vibrate) navigator.vibrate(q>=85?[60,40,60]:40);
+                minKnee=180;
+              } else if(hint&&reps===0&&state==='down') hint.textContent='Глубже… цель — угол колена ~90° (зелёная зона)';
+            }
+            if(hint&&state==='up'&&minKnee>165) hint.textContent=reps?'Выпрямляйся полностью — и снова вниз':'Опускайся — сядь до угла ~90° (зелёная зона)';
+            const bw=Math.max(14,cv.width/22), bx=cv.width-bw-12, by=42, bh=cv.height-84;
+            const depth=Math.max(0,Math.min(1,(160-knee)/55));
+            ctx.fillStyle='rgba(2,4,8,.5)'; ctx.fillRect(bx,by,bw,bh);
+            ctx.fillStyle='rgba(62,207,142,.32)'; ctx.fillRect(bx,by,bw,bh*0.4);
+            const fh=bh*depth;
+            ctx.fillStyle=c.b; ctx.fillRect(bx,by+bh-fh,bw,fh);
+            ctx.fillStyle='#f8fafc'; ctx.fillRect(bx-2,by+bh-fh-2,bw+4,4);
+          }
+        } else {
+          const hint=document.getElementById('pm-hint'); if(hint) hint.textContent='Не вижу позу — отойди дальше, чтобы было видно всё тело';
+        }
+      }
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  },
+  async poseFlip(){ window._pmFacing=window._pmFacing==='user'?'environment':'user'; try{ await this.pmStart(); }catch(e){ const st=document.getElementById('pm-status'); if(st) st.textContent='Эта камера недоступна'; } },
 
   /* карточка результата */
   shareCard(){
     openModal(mHead('Карточка результата · PNG')+
      '<div class="modal-b"><canvas id="sh-cv" width="1080" height="1350" style="width:100%;border-radius:14px;display:block"></canvas><p class="tiny muted2 mt-2 text-center">Скачай и поделись в сторис — пусть знают, кто тут в форме</p></div>'+
-     '<div class="modal-f"><button class="btn" onclick="A.closeModal()">Закрыть</button><button class="btn btn-g" onclick="A.shareDl()">'+ic('down','lucide-sm')+'Скачать PNG</button></div>');
+     '<div class="modal-f"><button class="btn" onclick="A.closeModal()">Закрыть</button><button class="btn btn-g" onclick="A.shareDl()">'+ic('down','lucide-sm')+'Скачать PNG</button></div>', true);
     drawShare();
   },
   shareDl(){
