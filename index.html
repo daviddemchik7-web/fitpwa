@@ -540,7 +540,7 @@ function aiSuggest(e){
 }
 
 /* ---------- shared shells ---------- */
-function roleBtn(){ return '<button class="btn btn-sm grad-border" onclick="A.switchRole()" title="Переключить режим">'+ic('repeat')+'<span class="rl">'+(S.role==='client'?'Режим тренера':'Режим клиента')+'</span></button>'; }
+function roleBtn(){ return '<button class="btn-ic" onclick="A.switchRole()" title="Сменить режим: '+(S.role==='client'?'тренер':'клиент')+'" aria-label="Сменить режим">'+ic('repeat')+'</button>'; }
 const TYPE=t=>{ const c=tc(); const m={ P:{c:c.a,n:'Персональная'}, G:{c:c.b,n:'Групповая'}, O:{c:'linear-gradient(135deg,'+c.a+','+c.b+')',n:'Онлайн'}, R:{c:'#64748b',n:'Отдых'} }; return m[t]||m.P; };
 function tdot(t){ return '<span class="dot" style="background:'+TYPE(t).c+'"></span>'; }
 function clientShell(active,inner){
@@ -575,16 +575,11 @@ function vHome(){
   const p=totalSets()?doneSets()/totalSets():0;
   const c=aiCtx();
   const goalPct=Math.round(Math.max(0,Math.min(1,(c.start-c.cur)/(c.start-c.goal))*100));
-  const next=[
-    {d:'Завтра · 09:00',n:'Ноги · Приседания и тяга',t:'P'},
-    {d:'Ср · 18:00',n:'Персональная с Марком',t:'P'},
-    {d:'Пт · 10:00',n:'Онлайн-тренировка',t:'O'}
-  ];
   return clientShell('home',
    '<header class="header"><div class="ic-box">'+ic('dumbbell')+'</div><div class="flex-1"><div class="tiny muted">Сегодня · '+todayLabel()+'</div><b>Привет, Ирина 👋</b></div>'+roleBtn()+'</header>'+
    '<div class="px-4 pb-28 pt-4 space-y-3">'+
     '<div class="grad-border p-5" style="border-radius:26px;cursor:pointer" onclick="A.cNav(\'player\')" title="Открыть тренировку">'+
-     '<div class="flex items-center gap-4"><div class="flex-1"><div class="tiny muted mb-1">Сегодняшняя тренировка</div><b style="font-size:17px">'+WORKOUT.name+'</b><div class="small muted mt-1">'+WORKOUT.ex.length+' упражнения · ~55 мин · вес подобран AI</div>'+
+     '<div class="flex items-center gap-4"><div class="flex-1"><div class="tiny muted mb-1">Сегодняшняя тренировка</div><b style="font-size:17px">'+WORKOUT.name+'</b><div class="small muted mt-1">'+WORKOUT.ex.length+' упражнения · вес подобран AI</div>'+
      '<div class="flex items-center gap-2 mt-3 flex-wrap"><button class="btn btn-g" onclick="event.stopPropagation();A.cNav(\'player\')">'+ic('play')+(p>0?'Продолжить':'Начать')+'</button><span class="badge st-ren">🔥 '+DB.me.streak+' дн подряд</span></div></div>'+
      ring(p,92,9)+'</div>'+
      '<div class="flex text-center mt-4 pt-3" style="border-top:1px solid var(--line)">'+
@@ -592,11 +587,9 @@ function vHome(){
       '<button class="flex-1" style="border-left:1px solid var(--line)" onclick="event.stopPropagation();A.cNav(\'schedule\')"><div class="font-bold">'+DB.me.sessionsMonth+'</div><div class="tiny muted">занятий</div></button>'+
       '<button class="flex-1" style="border-left:1px solid var(--line)" onclick="event.stopPropagation();A.cNav(\'progress\')"><div class="font-bold grad">'+goalPct+'%</div><div class="tiny muted">до цели</div></button>'+
      '</div>'+
+     '<div class="row between tiny" style="border-top:1px solid var(--line);margin-top:12px;padding-top:11px;cursor:pointer" onclick="event.stopPropagation();A.cNav(\'schedule\')"><span class="muted">Дальше: <b style="color:var(--p)">Завтра 09:00 — Ноги</b></span>'+ic('chevron-right','lucide-sm muted2')+'</div>'+
     '</div>'+
     '<div class="glass p-5 card-hover" style="cursor:pointer" onclick="A.aiOpen()"><div class="flex items-center gap-2 mb-2">'+ic('sparkles','lucide-sm')+'<b class="small">AI-инсайт дня</b><span class="badge badge-ai">AI</span><span class="muted" style="margin-left:auto">'+ic('chevron-right','lucide-sm')+'</span></div><p class="small muted">'+aiInsight().join(' ')+'</p></div>'+
-    '<div class="glass p-5"><div class="flex items-center justify-between mb-1"><b class="small">Ближайшие тренировки</b><button class="btn-ic" onclick="A.cNav(\'schedule\')">'+ic('calendar-days','lucide-sm')+'</button></div>'+
-     next.map(u=>'<div class="row-i" style="cursor:pointer" onclick="A.cNav(\'schedule\')">'+tdot(u.t)+'<div class="flex-1"><div class="font-bold small">'+u.n+'</div><div class="tiny muted">'+u.d+' · '+TYPE(u.t).n+'</div></div>'+ic('chevron-right','lucide-sm muted2')+'</div>').join('')+
-    '</div>'+
    '</div>'
   );
 }
@@ -610,15 +603,15 @@ function vPlayer(){
    '<header class="header"><button class="btn-ic" onclick="A.cNav(\'home\')">'+ic('chevron-left')+'</button><div class="flex-1"><b>'+WORKOUT.name+'</b><div class="tiny muted">Подход '+ds+' из '+ts+'</div></div>'+ring(ds/ts,44,5)+'</header>'+
    '<div class="px-4 pb-28 pt-3 space-y-3">'+
     '<div class="tabs">'+WORKOUT.ex.map((x,xi)=>'<button class="ex-chip'+(xi===i?' on':(DB.sp.done[xi]||[]).every(Boolean)?' done':'')+'" onclick="A.spEx('+xi+')">'+(xi+1)+'. '+x.name+'</button>').join('')+'</div>'+
-    '<div class="video-zone'+(DB.sp.inputs['play'+i]?' playing':'')+'" id="vz'+i+'">'+
-     '<button class="vplay" onclick="A.spPlay('+i+')">'+ic('play','lucide-lg')+'</button>'+
+    '<div class="video-zone'+(DB.sp.inputs['play'+i]?' playing':'')+'" id="vz'+i+'" ontouchstart="A.swS(event)" ontouchend="A.swE(event)" onclick="A.spPlay('+i+')" style="cursor:pointer">'+
+     '<button class="vplay" onclick="event.stopPropagation();A.spPlay('+i+')">'+ic('play','lucide-lg')+'</button>'+
      '<div class="bars"><i></i><i></i><i></i><i></i><i></i></div>'+
-     '<div class="absolute bottom-3 left-4 tiny muted">Демо-видео · техника упражнения</div>'+
+     '<div class="absolute bottom-3 left-4 tiny muted">Демо-видео · свайп = след. упражнение</div>'+
     '</div>'+
     '<button class="btn btn-sm w-full" onclick="A.poseOpen()">'+ic('video')+'Скан техники камерой · AI-скелет (бета)</button>'+
     '<div class="glass p-5">'+
      '<div class="flex items-center justify-between"><div><b>'+e.name+'</b><div class="small muted mt-0.5">'+e.sets+' × '+e.reps+' · отдых '+e.rest+' сек</div></div>'+
-      '<div class="flex gap-2"><button class="btn-ic" onclick="A.spMove(-1)">'+ic('chevron-left','lucide-sm')+'</button><button class="btn-ic" onclick="A.spMove(1)">'+ic('chevron-right','lucide-sm')+'</button></div></div>'+
+      '<div class="tiny muted">'+(i+1)+' / '+WORKOUT.ex.length+'</div></div>'+
      '<div class="tiny mt-2 ai-tip">✦ AI подобрал вес — просто отмечай подходы</div>'+
      '<div class="mt-2">'+Array.from({length:e.sets}).map((_,si)=>{
        const isTime=/сек|мин/i.test(e.reps), secs=parseSecs(e.reps), rpe=DB.sp.inputs['rpe'+i+'_'+si];
@@ -681,7 +674,7 @@ function vProgress(){
   const w=DB.weights, cur=w[w.length-1].v, start=w[0].v, delta=+(cur-start).toFixed(1);
   const goal=DB.goalWeight, prog=Math.max(0,Math.min(1,(start-cur)/(start-goal)));
   const sil=(label,sub,after)=>'<div class="glass-sm p-4 text-center flex-1">'+
-    '<svg viewBox="0 0 60 100" style="height:110px;margin:0 auto;display:block">'+
+    '<svg viewBox="0 0 60 100" style="height:92px;margin:0 auto;display:block">'+
      (after?'<defs><linearGradient id="sg'+(after?'a':'b')+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+tc().a+'"/><stop offset="1" stop-color="'+tc().b+'"/></linearGradient></defs>':'')+
      '<path d="M30 6 a7 7 0 1 1 -0.1 0 M30 20 c-8 0 -12 5 -13 12 l-3 18 5 1 3 -14 1 22 -2 34 6 0 3 -30 3 30 6 0 -2 -34 1 -22 3 14 5 -1 -3 -18 c-1 -7 -5 -12 -13 -12 z" fill="'+(after?'url(#sga)':'rgba(148,163,184,.35)')+'"/>'+
     '</svg>'+
@@ -745,8 +738,8 @@ function vProfile(){
      '<div class="glass-sm kpi text-center"><div class="v grad" data-count="'+DB.me.streak+'">0</div><div class="l">дней streak</div></div>'+
      '<div class="glass-sm kpi text-center"><div class="v grad" data-count="'+DB.me.sessionsMonth+'">0</div><div class="l">занятий в месяце</div></div>'+
     '</div>'+
-    '<div class="glass p-5"><b class="small">История оплат</b>'+
-     DB.payments.map(p=>'<div class="row-i"><span class="muted">'+ic('credit-card','lucide-sm')+'</span><div class="flex-1"><div class="font-semibold small">'+p.d+'</div><div class="tiny muted">'+p.s+'</div></div><b>'+money(p.a)+'</b></div>').join('')+
+    '<div class="glass p-5"><div class="row between mb-1"><b class="small">История оплат</b><button class="btn btn-sm btn-ghost" onclick="A.payToggle()">'+(S.payAll?'Свернуть':'Все '+DB.payments.length)+'</button></div>'+
+     DB.payments.slice(0,S.payAll?99:3).map(p=>'<div class="row-i"><span class="muted">'+ic('credit-card','lucide-sm')+'</span><div class="flex-1"><div class="font-semibold small">'+p.d+'</div><div class="tiny muted">'+p.s+'</div></div><b>'+money(p.a)+'</b></div>').join('')+
     '</div>'+
     '<div class="glass p-5"><b class="small mb-1 block">Настройки</b>'+
      tg('push','Push-уведомления','bell')+tg('sound','Звук таймера','volume-2')+tg('vibrate','Вибрация','vibrate')+tg('offline','Offline-режим','wifi-off')+
@@ -1058,6 +1051,9 @@ const A={
   },
   aiQuick(q){ A.aiSend(q); },
   aiOpen(){ S.chatMode='ai'; A.cNav('chat'); },
+  swS(e){ A._sx=e.touches?e.touches[0].clientX:e.clientX; },
+  swE(e){ const dx=(e.changedTouches?e.changedTouches[0].clientX:e.clientX)-(A._sx||0); if(Math.abs(dx)>60) A.spMove(dx<0?1:-1); },
+  payToggle(){ S.payAll=!S.payAll; render(); },
 
   /* скан техники камерой */
   async poseOpen(){
