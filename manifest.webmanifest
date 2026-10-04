@@ -1,0 +1,16 @@
+{
+  "name": "FitPWA — фитнес-платформа",
+  "short_name": "FitPWA",
+  "description": "Премиальное фитнес-приложение: тренировки, расписание, прогресс, чат с тренером и CRM.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#05070a",
+  "theme_color": "#05070a",
+  "lang": "ru",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
