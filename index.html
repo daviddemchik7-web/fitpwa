@@ -342,7 +342,15 @@ function animateBars(){ setTimeout(()=>{ document.querySelectorAll('#barchart .b
 /* ---------- rest timer ---------- */
 const RT={total:90,left:90,iv:null};
 function rtStart(sec){ RT.total=sec; RT.left=sec; document.getElementById('rest-overlay').innerHTML=rtHTML(); icons(); paintRT(); rtRun(); }
-function rtRun(){ clearInterval(RT.iv); RT.iv=setInterval(()=>{ RT.left--; paintRT(); if(RT.left<=0){ rtClose(); if(DB.settings.sound) beep(); toast('Отдых закончен — работаем! 💪'); } },1000); }
+function rtRun(){ clearInterval(RT.iv); RT.iv=setInterval(()=>{ RT.left--; paintRT(); if(RT.left<=0){
+  rtClose(); if(DB.settings.sound) beep();
+  if(S.role==='client'&&S.cView==='player'){
+    if(doneSets()>=totalSets()){ A.spFinish(true); return; }
+    const i=DB.sp.cur, e=WORKOUT.ex[i], done=(DB.sp.done[i]||[]).filter(Boolean).length;
+    if(done>=e.sets && i<WORKOUT.ex.length-1){ DB.sp.cur=i+1; save(); render(); toast('Дальше: '+WORKOUT.ex[DB.sp.cur].name); return; }
+  }
+  toast('Отдых закончен — работаем! 💪');
+} },1000); }
 function rtClose(){ clearInterval(RT.iv); document.getElementById('rest-overlay').innerHTML=''; }
 function rtSkip(){ rtClose(); }
 function rtAdd(){ RT.left+=15; RT.total=Math.max(RT.total,RT.left); paintRT(); }
@@ -411,16 +419,25 @@ function aiInsight(){
   out.push('Streak '+c.streak+' дн — '+pick(['лучшая серия месяца 🔥','продолжай, ты в потоке','до ачивки «'+(c.streak<21?'21 день':c.streak<30?'30 дней':'50 дней')+'» осталось '+Math.max(1,(c.streak<21?21:c.streak<30?30:50)-c.streak)+' дн']));
   return out;
 }
+function aiSuggestPlan(e){
+  const range=e.reps.split('-'); const top=parseInt(range[1]||range[0]), low=parseInt(range[0]);
+  let w=e.weight, reps=low;
+  const h=DB.exHistory.slice().reverse().find(x=>x.name===e.name);
+  if(h){
+    if(h.reps>=top && h.weight>=e.weight){ w=e.weight+(e.weight<10?2:2.5); reps=low; }
+    else if(h.reps<=low-3){ w=Math.max(1,Math.round(h.weight*0.9)); reps=low; }
+    else { w=h.weight; reps=Math.min(top,h.reps+1); }
+  }
+  return {w:w,reps:reps};
+}
 function aiSuggest(e){
   const h=DB.exHistory.slice().reverse().find(x=>x.name===e.name);
-  if(!h) return 'Первый подход — разминочный, без веса. Техника прежде веса.';
+  if(!h) return 'Вес уже подобран — просто отмечай подходы галочками.';
+  const plan=aiSuggestPlan(e);
   const range=e.reps.split('-'); const top=parseInt(range[1]||range[0]), low=parseInt(range[0]);
-  if(h.reps>=top && h.weight>=e.weight){
-    const up=e.weight<10?2:2.5;
-    return 'Прошлый раз '+h.weight+' кг ×'+h.reps+' — рост! Сегодня '+e.weight+' кг ×'+(top+1)+' или '+(e.weight+up)+' кг ×'+low+'. Последний подход до отказа.';
-  }
-  if(h.reps<=low-3) return 'В прошлый раз '+h.weight+' кг ×'+h.reps+' — сбрось до '+Math.max(1,Math.round(h.weight*0.9))+' кг, верни технику.';
-  return 'Прошлый раз '+h.weight+' кг ×'+h.reps+' — держи вес, цель +1 повторение в каждом подходе.';
+  if(h.reps>=top && h.weight>=e.weight) return 'Прошлый раз '+h.weight+' кг ×'+h.reps+' — рост! Ставлю '+plan.w+' кг ×'+plan.reps+'. Последний подход до отказа.';
+  if(h.reps<=low-3) return 'В прошлый раз '+h.weight+' кг ×'+h.reps+' — сбрасываю до '+plan.w+' кг, вернём технику.';
+  return 'Прошлый раз '+h.weight+' кг ×'+h.reps+' — держу вес, цель '+plan.reps+' повторений.';
 }
 
 /* ---------- shared shells ---------- */
@@ -456,6 +473,8 @@ function doneSets(){ return WORKOUT.ex.reduce((a,e,i)=>a+(DB.sp.done[i]||[]).fil
 
 function vHome(){
   const p=totalSets()?doneSets()/totalSets():0;
+  const c=aiCtx();
+  const goalPct=Math.round(Math.max(0,Math.min(1,(c.start-c.cur)/(c.start-c.goal))*100));
   const upcoming=[
     {d:'Завтра · 09:00',n:'Ноги · Приседания и тяга',t:'P'},
     {d:'Ср · 18:00',n:'Персональная с Марком',t:'P'},
@@ -463,20 +482,19 @@ function vHome(){
   ];
   return clientShell('home',
    '<header class="header"><div class="ic-box">'+ic('dumbbell')+'</div><div class="flex-1"><div class="tiny muted">Сегодня · '+todayLabel()+'</div><b>Привет, Ирина 👋</b></div>'+roleBtn()+'</header>'+
-   '<div class="px-4 pb-28 pt-4 space-y-4">'+
-    '<div class="grad-border p-5 flex items-center gap-4" style="border-radius:26px">'+
-     '<div class="flex-1"><div class="tiny muted mb-1">Сегодняшняя тренировка</div><b style="font-size:17px">'+WORKOUT.name+'</b>'+
-      '<div class="small muted mt-1">'+WORKOUT.ex.length+' упражнения · '+totalSets()+' подходов · ~55 мин</div>'+
-      '<button class="btn btn-g mt-3" onclick="A.cNav(\'player\')">'+ic('play')+(p>0?'Продолжить':'Начать тренировку')+'</button></div>'+
-     ring(p,92,9)+
+   '<div class="px-4 pb-28 pt-4 space-y-3">'+
+    '<div class="grad-border p-5" style="border-radius:26px">'+
+     '<div class="flex items-center gap-4"><div class="flex-1"><div class="tiny muted mb-1">Сегодняшняя тренировка</div><b style="font-size:17px">'+WORKOUT.name+'</b><div class="small muted mt-1">'+WORKOUT.ex.length+' упражнения · ~55 мин</div>'+
+     '<div class="flex items-center gap-2 mt-3 flex-wrap"><button class="btn btn-g" onclick="A.cNav(\'player\')">'+ic('play')+(p>0?'Продолжить':'Начать')+'</button><span class="badge" style="color:#c4b5fd;border-color:rgba(124,92,255,.45)">🔥 '+DB.me.streak+' дн подряд</span></div></div>'+
+     ring(p,92,9)+'</div>'+
     '</div>'+
-    '<div class="grid grid-cols-3 gap-3">'+
-     kpi('flame',DB.me.streak,'дней подряд','')+
-     kpi('activity',DB.me.volume,'кг за неделю','')+
-     kpi('check-circle',DB.me.sessionsMonth,'занятий','')+
+    '<div class="glass-sm px-4 py-3 flex text-center">'+
+     '<div class="flex-1"><div class="font-bold">'+(c.volume/1000).toFixed(1)+' т</div><div class="tiny muted">объём/нед</div></div>'+
+     '<div class="flex-1" style="border-left:1px solid var(--line)"><div class="font-bold">'+DB.me.sessionsMonth+'</div><div class="tiny muted">занятий</div></div>'+
+     '<div class="flex-1" style="border-left:1px solid var(--line)"><div class="font-bold grad">'+goalPct+'%</div><div class="tiny muted">до цели</div></div>'+
     '</div>'+
-    '<div class="glass p-5"><div class="flex items-center justify-between mb-1"><b>Ближайшие тренировки</b><button class="btn-ic" onclick="A.cNav(\'schedule\')">'+ic('calendar-days','lucide-sm')+'</button></div>'+
-     upcoming.map(u=>'<div class="row-i">'+tdot(u.t)+'<div class="flex-1"><div class="font-bold small">'+u.n+'</div><div class="tiny muted">'+u.d+' · '+TYPE[u.t].n+'</div></div>'+ic('chevron-right','lucide-sm muted2')+'</div>').join('')+
+    '<div class="glass p-5"><div class="flex items-center justify-between mb-1"><b class="small">Ближайшие тренировки</b><button class="btn-ic" onclick="A.cNav(\'schedule\')">'+ic('calendar-days','lucide-sm')+'</button></div>'+
+     upcoming.slice(0,2).map(u=>'<div class="row-i">'+tdot(u.t)+'<div class="flex-1"><div class="font-bold small">'+u.n+'</div><div class="tiny muted">'+u.d+' · '+TYPE[u.t].n+'</div></div>'+ic('chevron-right','lucide-sm muted2')+'</div>').join('')+
     '</div>'+
     '<div class="glass p-5"><div class="flex items-center gap-2 mb-2">'+ic('sparkles','lucide-sm')+'<b class="small">AI-инсайт дня</b><span class="badge" style="color:#c4b5fd;border-color:rgba(124,92,255,.4)">AI</span></div><p class="small muted">'+aiInsight().join(' ')+'</p></div>'+
    '</div>'
@@ -486,25 +504,32 @@ function kpi(icon,v,l){ return '<div class="glass kpi text-center"><div class="i
 
 function vPlayer(){
   const i=Math.min(DB.sp.cur,WORKOUT.ex.length-1), e=WORKOUT.ex[i], done=DB.sp.done[i]||[];
+  const plan=aiSuggestPlan(e);
+  const ds=doneSets(), ts=totalSets();
   return clientShell('player',
-   '<header class="header"><button class="btn-ic" onclick="A.cNav(\'home\')">'+ic('chevron-left')+'</button><div class="flex-1"><b>'+WORKOUT.name+'</b><div class="tiny muted">'+doneSets()+' / '+totalSets()+' подходов</div></div>'+ring(doneSets()/totalSets(),44,5)+'</header>'+
-   '<div class="px-4 pb-28 pt-3 space-y-4">'+
+   '<header class="header"><button class="btn-ic" onclick="A.cNav(\'home\')">'+ic('chevron-left')+'</button><div class="flex-1"><b>'+WORKOUT.name+'</b><div class="tiny muted">Подход '+ds+' из '+ts+'</div></div>'+ring(ds/ts,44,5)+'</header>'+
+   '<div class="px-4 pb-28 pt-3 space-y-3">'+
     '<div class="tabs">'+WORKOUT.ex.map((x,xi)=>'<button class="ex-chip'+(xi===i?' on':(DB.sp.done[xi]||[]).every(Boolean)?' done':'')+'" onclick="A.spEx('+xi+')">'+(xi+1)+'. '+x.name+'</button>').join('')+'</div>'+
     '<div class="video-zone'+(DB.sp.inputs['play'+i]?' playing':'')+'" id="vz'+i+'">'+
      '<button class="vplay" onclick="A.spPlay('+i+')">'+ic('play','lucide-lg')+'</button>'+
      '<div class="bars"><i></i><i></i><i></i><i></i><i></i></div>'+
      '<div class="absolute bottom-3 left-4 tiny muted">Демо-видео · техника упражнения</div>'+
     '</div>'+
-    '<div class="glass p-5"><div class="flex items-center justify-between"><div><b>'+e.name+'</b><div class="small muted mt-0.5">'+e.sets+' подхода × '+e.reps+' · '+e.weight+' кг · отдых '+e.rest+' сек</div></div>'+
-     '<div class="flex gap-2"><button class="btn-ic" onclick="A.spMove(-1)">'+ic('chevron-left','lucide-sm')+'</button><button class="btn-ic" onclick="A.spMove(1)">'+ic('chevron-right','lucide-sm')+'</button></div></div>'+
-     '<div class="tiny mt-2" style="color:#22d3ee">✦ AI: '+esc(aiSuggest(e))+'</div>'+
-     '<div class="mt-3">'+Array.from({length:e.sets}).map((_,si)=>
-       '<div class="set-row'+(done[si]?' set-done':'')+'"><span class="set-num">'+(si+1)+'</span>'+
-       '<input style="flex:1;padding:8px 10px" type="number" value="'+(DB.sp.inputs['w'+i+'_'+si]??e.weight)+'" onchange="A.spInput(\'w'+i+'_'+si+'\',this.value)" placeholder="кг"/>'+
-       '<input style="flex:1;padding:8px 10px" type="number" value="'+(DB.sp.inputs['r'+i+'_'+si]??e.reps.split('-')[0])+'" onchange="A.spInput(\'r'+i+'_'+si+'\',this.value)" placeholder="повт."/>'+
-       '<button class="check" onclick="A.spSet('+i+','+si+')">'+ic('check','lucide-sm')+'</button></div>').join('')+
-    '</div></div>'+
-    '<button class="btn btn-g w-full" onclick="A.spFinish()">'+ic('check-circle')+'Завершить тренировку</button>'+
+    '<div class="glass p-5">'+
+     '<div class="flex items-center justify-between"><div><b>'+e.name+'</b><div class="small muted mt-0.5">'+e.sets+' × '+e.reps+' · отдых '+e.rest+' сек</div></div>'+
+      '<div class="flex gap-2"><button class="btn-ic" onclick="A.spMove(-1)">'+ic('chevron-left','lucide-sm')+'</button><button class="btn-ic" onclick="A.spMove(1)">'+ic('chevron-right','lucide-sm')+'</button></div></div>'+
+     '<div class="tiny mt-2" style="color:#22d3ee">✦ AI подобрал вес — просто отмечай подходы</div>'+
+     '<div class="mt-2">'+Array.from({length:e.sets}).map((_,si)=>
+       '<div class="set-row'+(done[si]?' set-done':'')+'" style="cursor:pointer" onclick="A.spSet('+i+','+si+')">'+
+       '<span class="set-num">'+(si+1)+'</span>'+
+       '<input style="width:72px;padding:8px" type="number" value="'+(DB.sp.inputs['w'+i+'_'+si]??plan.w)+'" onchange="A.spInput(\'w'+i+'_'+si+'\',this.value)" onclick="event.stopPropagation()" aria-label="вес, кг"/>'+
+       '<input style="width:72px;padding:8px" type="number" value="'+(DB.sp.inputs['r'+i+'_'+si]??plan.reps)+'" onchange="A.spInput(\'r'+i+'_'+si+'\',this.value)" onclick="event.stopPropagation()" aria-label="повторения"/>'+
+       '<span class="tiny muted flex-1 text-right">'+e.reps+'</span>'+
+       '<button class="check" onclick="event.stopPropagation();A.spSet('+i+','+si+')" aria-label="отметить подход">'+ic('check','lucide-sm')+'</button></div>').join('')+
+     '</div>'+
+    '</div>'+
+    (ds>0&&ds<ts?'<button class="btn w-full" onclick="A.spFinish()">Завершить раньше</button>':'')+
+    (ds===0?'<p class="tiny muted2 text-center">Тапни по подходу — AI уже подобрал вес и повторения</p>':'')+
    '</div>'
   );
 }
@@ -566,7 +591,7 @@ function vChat(){
   const ai=S.chatMode==='ai';
   const thread=ai?DB.aiChat:DB.chat;
   const chips=['Почему вес стоит?','Что съесть после зала?','План на неделю','Как быстрее восстановиться?','Нет мотивации 🙁'];
-  const msgs=thread.map(m=>{
+  const msgs=(ai&&thread.length===0?'<div><div class="small" style="background:rgba(124,92,255,.08);border:1px solid var(--line);border-radius:18px;padding:9px 13px">Привет! Я FitPWA AI 🙌 Вижу твой прогресс: '+aiCtx().cur+' кг, streak '+aiCtx().streak+' дн. Спроси про питание, план или восстановление — или жми на подсказки ниже.</div></div>':'')+thread.map(m=>{
     if(m.who==='ai-typing') return '<div class="typing" style="max-width:60%"><div class="small" style="background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:18px;padding:11px 15px;display:inline-flex;gap:4px;align-items:center"><i></i><i></i><i></i></div></div>';
     return '<div class="'+(m.who==='me'?'ml-auto':'')+'" style="max-width:82%"><div class="small" style="background:'+(m.who==='me'?'linear-gradient(135deg,rgba(124,92,255,.35),rgba(34,211,238,.22))':ai?'rgba(124,92,255,.08)':'rgba(255,255,255,.06)')+';border:1px solid var(--line);border-radius:18px;padding:9px 13px;white-space:pre-wrap">'+esc(m.txt)+'</div><div class="tiny muted2 mt-0.5 text-right">'+m.t+'</div></div>';
   }).join('');
@@ -582,7 +607,6 @@ function vChat(){
      (ai&&DB.aiChat.length<3?'<div class="px-4 pb-1 flex gap-2 overflow-x-auto">'+chips.map(c=>'<button class="chip" style="flex-shrink:0;font-size:11.5px" onclick="A.aiQuick(\''+c.replace(/'/g,"\\'")+'\')">'+c+'</button>').join('')+'</div>':'')+
      '<div class="flex gap-2 p-3 border-t" style="border-color:var(--line)"><input id="chat-inp" placeholder="'+(ai?'Спроси AI-тренера…':'Сообщение…')+'" onkeydown="if(event.key===\'Enter\')A.chatSend()"/><button class="btn btn-g" style="width:46px;padding:0" onclick="A.chatSend()">'+ic('send','lucide-sm')+'</button></div>'+
     '</div>'+
-    (ai?'<p class="tiny muted2 text-center mt-2">AI учитывает твой вес, streak и тренировки. В сети — полная модель, офлайн — встроенный тренер</p>':'')+
    '</div>'
   );
 }
@@ -810,20 +834,30 @@ const A={
     const done=DB.sp.done[i]=DB.sp.done[i]||[];
     done[si]=!done[si];
     save();
-    if(done[si]){ if(DB.settings.vibrate&&navigator.vibrate) navigator.vibrate(60); if(DB.sp.cur<WORKOUT.ex.length-1||si<WORKOUT.ex[i].sets-1) rtStart(WORKOUT.ex[i].rest); }
+    if(done[si]){
+      if(DB.settings.vibrate&&navigator.vibrate) navigator.vibrate(60);
+      if(doneSets()>=totalSets()){ render(); setTimeout(()=>A.spFinish(true),700); return; }
+      rtStart(WORKOUT.ex[i].rest);
+    }
     render();
   },
-  spFinish(){
+  spFinish(auto){
+    rtClose();
     WORKOUT.ex.forEach((e,i)=>{
+      const plan=aiSuggestPlan(e);
       const pairs=[];
-      for(let si=0;si<e.sets;si++){ const wv=parseFloat(DB.sp.inputs['w'+i+'_'+si]), rv=parseFloat(DB.sp.inputs['r'+i+'_'+si]); if(wv&&rv) pairs.push([wv,rv]); }
+      for(let si=0;si<e.sets;si++){
+        const wv=parseFloat(DB.sp.inputs['w'+i+'_'+si] ?? plan.w), rv=parseFloat(DB.sp.inputs['r'+i+'_'+si] ?? plan.reps);
+        if(wv&&rv) pairs.push([wv,rv]);
+      }
       if(!pairs.length) return;
       const maxW=Math.max.apply(null,pairs.map(p=>p[0]));
       const reps=Math.max.apply(null,pairs.filter(p=>p[0]===maxW).map(p=>p[1]));
       DB.exHistory.push({name:e.name,weight:maxW,reps:reps,date:new Date().toISOString().slice(0,10)});
     });
     if(DB.exHistory.length>200) DB.exHistory=DB.exHistory.slice(-200);
-    DB.sp={done:{},cur:0,inputs:{}}; save(); DB.me.streak++; DB.me.sessionsMonth++; save(); A.cNav('home'); toast('Тренировка завершена! Streak +1 🔥');
+    DB.sp={done:{},cur:0,inputs:{}}; save(); DB.me.streak++; DB.me.sessionsMonth++; save(); A.cNav('home');
+    toast(auto?'Все подходы сделаны! +1 день к streak 🔥':'Тренировка завершена! Streak +1 🔥');
   },
 
   /* клиент: расписание */
