@@ -179,6 +179,10 @@ label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:upperca
 /* bar chart */
 .bar{fill:rgba(124,92,255,.4);transition:height .7s cubic-bezier(.2,.8,.2,1),y .7s cubic-bezier(.2,.8,.2,1)}
 .bar.last{fill:url(#bg-grad)}
+.typing i{width:5px;height:5px;border-radius:99px;background:var(--s);display:inline-block;animation:tp 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}
+.typing i:nth-child(3){animation-delay:.3s}
+@keyframes tp{0%,100%{opacity:.25;transform:translateY(0)}50%{opacity:1;transform:translateY(-2px)}}
 table.tbl{width:100%;border-collapse:collapse;font-size:13px}
 .tbl td{padding:10px 6px;border-bottom:1px solid var(--line)}
 .tbl tr:last-child td{border-bottom:none}
@@ -270,7 +274,8 @@ function seed(){
     ]
   };
 }
-function load(){ try{ const r=localStorage.getItem(LS); DB=r?JSON.parse(r):null; }catch(e){ DB=null; } if(!DB||!DB.me){ DB=seed(); save(); } S.role=DB.role||'client'; }
+function load(){ try{ const r=localStorage.getItem(LS); DB=r?JSON.parse(r):null; }catch(e){ DB=null; } if(!DB||!DB.me){ DB=seed(); save(); } S.role=DB.role||'client';
+  if(!DB.aiChat) DB.aiChat=[]; if(!DB.exHistory) DB.exHistory=[]; }
 function save(){ try{ localStorage.setItem(LS,JSON.stringify(DB)); }catch(e){} }
 
 /* ---------- helpers ---------- */
@@ -357,6 +362,67 @@ function rtHTML(){
   '</div></div>';
 }
 
+/* ---------- FitPWA AI engine ---------- */
+const COACH_REPLIES=['Отлично! Держи темп 💪','Записал, скорректируем план на неделю','Так и планировал. Отдых — 90 секунд между подходами','Молодец! Завтра ноги — не забудь про разминку','Хорошо, посмотрим на замерах в конце недели 🔥'];
+function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+function aiCtx(){
+  const w=DB.weights, cur=w[w.length-1].v, start=w[0].v;
+  const weeks=Math.max(1,Math.round((w.length-1)*5/7));
+  const slope=+((cur-w[0].v)/weeks).toFixed(2);
+  return {cur:cur, start:start, delta:+(cur-start).toFixed(1), weeks:weeks, slope:slope,
+    goal:DB.goalWeight, streak:DB.me.streak, sessions:DB.me.sessionsMonth, volume:DB.me.volume,
+    leftToGoal:+(cur-DB.goalWeight).toFixed(1)};
+}
+function nowT(){ const d=new Date(); return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2); }
+async function aiLLM(q){
+  const c=aiCtx();
+  const sys='Ты — «FitPWA AI», дружелюбный профессиональный фитнес-тренер внутри приложения. Отвечай по-русски, кратко (до 100 слов), конкретно, с числами, без markdown и заголовков. Данные клиента: вес '+c.cur+' кг (изменение '+c.delta+' кг за '+c.weeks+' нед, темп '+c.slope+' кг/нед), цель '+c.goal+' кг, без пропусков '+c.streak+' дн, тренировок в этом месяце '+c.sessions+', объём за неделю '+c.volume+' кг.';
+  const ctl=new AbortController(); const to=setTimeout(()=>ctl.abort(),9000);
+  const r=await fetch('https://text.pollinations.ai/',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({messages:[{role:'system',content:sys},{role:'user',content:q}],model:'openai'}),signal:ctl.signal});
+  clearTimeout(to);
+  const t=(await r.text()||'').trim();
+  return (t && t.length>2 && t.length<1600 && !/^</.test(t)) ? t : '';
+}
+function aiLocal(q){
+  const c=aiCtx(); const s=q.toLowerCase();
+  if(/(плато|не худе|вес стоит|не уходит|застрял)/.test(s))
+    return pick(['Смотри на факты: '+c.delta+' кг за '+c.weeks+' нед ('+c.slope+' кг/нед). '+(c.slope>=-0.1?'Темпа нет — значит дефицит «съелся»: убери ~200 ккал или добавь 2 000 шагов в день на неделю, дальше посмотрим по весу.':'Темп нормальный: '+ (c.slope*-1).toFixed(2) +' кг/нед — это безопасный темп, не гони.')+' И взвешивайся в одно время, утром — скачки воды врут.']);
+  if(/(питани|еда|съест|кушать|белок|кбжу|калор|рацион)/.test(s))
+    return 'База: белок '+Math.round(c.cur*1.8)+' г/день ('+Math.round(c.cur*1.8/4)+' приёма по '+Math.round(c.cur*1.8/4/30)+' г), вода '+ (c.cur*0.033).toFixed(1) +' л. '+(c.slope>=-0.1?'Держи дефицит ~15% от нормы.':'Темп уже рабочий — ешь как есть, не режь калории.')+' После зала: белок + углеводы в течение часа.';
+  if(/(план|недел|расписа|тренировк)/.test(s))
+    return 'Твой каркас: Пн — верх тела, Ср — низ + кор, Пт — полный тело, сб — кардио 30 мин лёгким темпом. В '+c.sessions+'-й сессии месяца держим объём '+ (c.volume/1000).toFixed(1) +' т/нед. Расписание можно менять — главное 3 силовых в неделю.';
+  if(/(восстанов|устал|болит|травм|сон|отдых)/.test(s))
+    return 'Восстановление = 7–9 ч сна + белок + вода '+ (c.cur*0.033).toFixed(1) +' л. Если болят мышцы — лёгкое кардио 20 мин и растяжка лучше полного лежания. Острая боль в суставе — стоп и к тренеру. '+c.streak+' дней подряд — ты в отличной форме, отдых 1 день не ломает streak.';
+  if(/(мотива|лень|не хочу|бросит|нет сил|не могу)/.test(s))
+    return pick([''+c.streak+' дней подряд — не теряй серию. Договорись с собой: только разминка. Через 5 минут втянешься — это работает всегда.','Сила не в мотивации, а в ритуале: форма → вода → 10 минут. '+(c.sessions>0?'У тебя уже '+c.sessions+' тренировок в месяце — ты не тот человек, который бросает.':'')]);
+  if(/(вод|пить|жидкост)/.test(s))
+    return 'Норма: '+ (c.cur*0.033).toFixed(1) +' л/день. Тренировка: +500–700 мл. Признак, что пьёшь мало — тёмная моча и тяга к сладкому вечером.';
+  if(/(кардио|бег|бега)/.test(s))
+    return 'Для твоей цели: 2×25 мин в лёгкой зоне (можешь говорить фразами) или 1×15 мин интервалов 1/1. Кардио после сил — жжёшь жир, а не силы.';
+  if(/(нача|новичок|с чего|первый раз)/.test(s))
+    return 'Старт: 3 тренировки/нед по 40 мин, весь месяц — техника с лёгкими весами. «Начать тренировку» на главной уже собрано под тебя. Первые 2 недели без рекордов — тело учится.';
+  return pick(['Сводка: '+c.cur+' кг, '+c.delta+' кг от старта, цель '+c.goal+' кг ('+c.leftToGoal+' кг осталось), streak '+c.streak+' дн. Спроси про питание, план, восстановление или кардио — отвечу детально.','Готов помочь. Могу разобрать питание, построить план на неделю или объяснить любое упражнение. Что интересует?']);
+}
+function aiInsight(){
+  const c=aiCtx(); const out=[];
+  if(c.slope<0) out.push('Темп '+c.slope+' кг/нед — при нём цель '+c.goal+' кг примерно к началу '+['декабря','января'][c.leftToGoal>4?1:0]+'. Всё под контролем ✨');
+  else out.push('Вес стоит — сегодня добавь 2 000 шагов и минус 200 ккал, посмотрим на графике через неделю.');
+  out.push('Streak '+c.streak+' дн — '+pick(['лучшая серия месяца 🔥','продолжай, ты в потоке','до ачивки «'+(c.streak<21?'21 день':c.streak<30?'30 дней':'50 дней')+'» осталось '+Math.max(1,(c.streak<21?21:c.streak<30?30:50)-c.streak)+' дн']));
+  return out;
+}
+function aiSuggest(e){
+  const h=DB.exHistory.slice().reverse().find(x=>x.name===e.name);
+  if(!h) return 'Первый подход — разминочный, без веса. Техника прежде веса.';
+  const range=e.reps.split('-'); const top=parseInt(range[1]||range[0]), low=parseInt(range[0]);
+  if(h.reps>=top && h.weight>=e.weight){
+    const up=e.weight<10?2:2.5;
+    return 'Прошлый раз '+h.weight+' кг ×'+h.reps+' — рост! Сегодня '+e.weight+' кг ×'+(top+1)+' или '+(e.weight+up)+' кг ×'+low+'. Последний подход до отказа.';
+  }
+  if(h.reps<=low-3) return 'В прошлый раз '+h.weight+' кг ×'+h.reps+' — сбрось до '+Math.max(1,Math.round(h.weight*0.9))+' кг, верни технику.';
+  return 'Прошлый раз '+h.weight+' кг ×'+h.reps+' — держи вес, цель +1 повторение в каждом подходе.';
+}
+
 /* ---------- shared shells ---------- */
 function roleBtn(){ return '<button class="btn btn-sm grad-border" onclick="A.switchRole()" title="Переключить режим">'+ic('repeat')+'<span class="rl">'+(S.role==='client'?'Режим тренера':'Режим клиента')+'</span></button>'; }
 const TYPE={ P:{c:'#7c5cff',n:'Персональная'}, G:{c:'#22d3ee',n:'Групповая'}, O:{c:'linear-gradient(135deg,#7c5cff,#22d3ee)',n:'Онлайн'}, R:{c:'#64748b',n:'Отдых'} };
@@ -412,7 +478,7 @@ function vHome(){
     '<div class="glass p-5"><div class="flex items-center justify-between mb-1"><b>Ближайшие тренировки</b><button class="btn-ic" onclick="A.cNav(\'schedule\')">'+ic('calendar-days','lucide-sm')+'</button></div>'+
      upcoming.map(u=>'<div class="row-i">'+tdot(u.t)+'<div class="flex-1"><div class="font-bold small">'+u.n+'</div><div class="tiny muted">'+u.d+' · '+TYPE[u.t].n+'</div></div>'+ic('chevron-right','lucide-sm muted2')+'</div>').join('')+
     '</div>'+
-    '<div class="glass p-5"><div class="flex items-center gap-2 mb-2">'+ic('sparkles','lucide-sm')+'<b class="small">Совет тренера</b></div><p class="small muted">Держи темп: 12 дней подряд — это огонь. Сегодня фокус на технике жима, вес +1 кг на последний подход.</p></div>'+
+    '<div class="glass p-5"><div class="flex items-center gap-2 mb-2">'+ic('sparkles','lucide-sm')+'<b class="small">AI-инсайт дня</b><span class="badge" style="color:#c4b5fd;border-color:rgba(124,92,255,.4)">AI</span></div><p class="small muted">'+aiInsight().join(' ')+'</p></div>'+
    '</div>'
   );
 }
@@ -431,6 +497,7 @@ function vPlayer(){
     '</div>'+
     '<div class="glass p-5"><div class="flex items-center justify-between"><div><b>'+e.name+'</b><div class="small muted mt-0.5">'+e.sets+' подхода × '+e.reps+' · '+e.weight+' кг · отдых '+e.rest+' сек</div></div>'+
      '<div class="flex gap-2"><button class="btn-ic" onclick="A.spMove(-1)">'+ic('chevron-left','lucide-sm')+'</button><button class="btn-ic" onclick="A.spMove(1)">'+ic('chevron-right','lucide-sm')+'</button></div></div>'+
+     '<div class="tiny mt-2" style="color:#22d3ee">✦ AI: '+esc(aiSuggest(e))+'</div>'+
      '<div class="mt-3">'+Array.from({length:e.sets}).map((_,si)=>
        '<div class="set-row'+(done[si]?' set-done':'')+'"><span class="set-num">'+(si+1)+'</span>'+
        '<input style="flex:1;padding:8px 10px" type="number" value="'+(DB.sp.inputs['w'+i+'_'+si]??e.weight)+'" onchange="A.spInput(\'w'+i+'_'+si+'\',this.value)" placeholder="кг"/>'+
@@ -496,14 +563,27 @@ function vProgress(){
 }
 
 function vChat(){
+  const ai=S.chatMode==='ai';
+  const thread=ai?DB.aiChat:DB.chat;
+  const chips=['Почему вес стоит?','Что съесть после зала?','План на неделю','Как быстрее восстановиться?','Нет мотивации 🙁'];
+  const msgs=thread.map(m=>{
+    if(m.who==='ai-typing') return '<div class="typing" style="max-width:60%"><div class="small" style="background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:18px;padding:11px 15px;display:inline-flex;gap:4px;align-items:center"><i></i><i></i><i></i></div></div>';
+    return '<div class="'+(m.who==='me'?'ml-auto':'')+'" style="max-width:82%"><div class="small" style="background:'+(m.who==='me'?'linear-gradient(135deg,rgba(124,92,255,.35),rgba(34,211,238,.22))':ai?'rgba(124,92,255,.08)':'rgba(255,255,255,.06)')+';border:1px solid var(--line);border-radius:18px;padding:9px 13px;white-space:pre-wrap">'+esc(m.txt)+'</div><div class="tiny muted2 mt-0.5 text-right">'+m.t+'</div></div>';
+  }).join('');
   return clientShell('chat',
-   '<header class="header"><div class="av">'+ 'М' +'</div><div class="flex-1"><b>Марк · тренер</b><div class="tiny" style="color:#22d3ee">● онлайн</div></div>'+roleBtn()+'</header>'+
-   '<div class="px-4 pb-28 pt-4"><div class="glass" style="height:calc(100vh - 190px);display:flex;flex-direction:column">'+
-    '<div class="flex-1 overflow-y-auto p-4 flex flex-col gap-2" id="chat-msgs">'+
-     DB.chat.map(m=>'<div class="'+(m.who==='me'?'ml-auto':'')+'" style="max-width:80%"><div class="small" style="background:'+(m.who==='me'?'linear-gradient(135deg,rgba(124,92,255,.35),rgba(34,211,238,.22))':'rgba(255,255,255,.06)')+';border:1px solid var(--line);border-radius:18px;padding:9px 13px">'+esc(m.txt)+'</div><div class="tiny muted2 mt-0.5 text-right">'+m.t+'</div></div>').join('')+
+   '<header class="header">'+
+    (ai?'<div class="av grad-bg">'+ic('sparkles','lucide-sm')+'</div><div class="flex-1"><b>FitPWA AI · ассистент</b><div class="tiny" style="color:#22d3ee">● знает твой прогресс</div></div>'
+       :'<div class="av">'+ 'М' +'</div><div class="flex-1"><b>Марк · тренер</b><div class="tiny" style="color:#22d3ee">● онлайн</div></div>')+
+    roleBtn()+'</header>'+
+   '<div class="px-4 pb-28 pt-3">'+
+    '<div class="flex gap-2 mb-3"><button class="chip flex-1 text-center'+(!ai?' on':'')+'" onclick="A.chatMode(\'trainer\')">Тренер</button><button class="chip flex-1 text-center flex items-center justify-center gap-1'+(ai?' on':'')+'" onclick="A.chatMode(\'ai\')">'+ic('sparkles','lucide-sm')+'AI-ассистент</button></div>'+
+    '<div class="glass" style="height:calc(100vh - 250px);display:flex;flex-direction:column">'+
+     '<div class="flex-1 overflow-y-auto p-4 flex flex-col gap-2" id="chat-msgs">'+msgs+'</div>'+
+     (ai&&DB.aiChat.length<3?'<div class="px-4 pb-1 flex gap-2 overflow-x-auto">'+chips.map(c=>'<button class="chip" style="flex-shrink:0;font-size:11.5px" onclick="A.aiQuick(\''+c.replace(/'/g,"\\'")+'\')">'+c+'</button>').join('')+'</div>':'')+
+     '<div class="flex gap-2 p-3 border-t" style="border-color:var(--line)"><input id="chat-inp" placeholder="'+(ai?'Спроси AI-тренера…':'Сообщение…')+'" onkeydown="if(event.key===\'Enter\')A.chatSend()"/><button class="btn btn-g" style="width:46px;padding:0" onclick="A.chatSend()">'+ic('send','lucide-sm')+'</button></div>'+
     '</div>'+
-    '<div class="flex gap-2 p-3 border-t" style="border-color:var(--line)"><input id="chat-inp" placeholder="Сообщение…"/><button class="btn btn-g" style="width:46px;padding:0" onclick="A.chatSend()">'+ic('send','lucide-sm')+'</button></div>'+
-   '</div></div>'
+    (ai?'<p class="tiny muted2 text-center mt-2">AI учитывает твой вес, streak и тренировки. В сети — полная модель, офлайн — встроенный тренер</p>':'')+
+   '</div>'
   );
 }
 
@@ -733,7 +813,18 @@ const A={
     if(done[si]){ if(DB.settings.vibrate&&navigator.vibrate) navigator.vibrate(60); if(DB.sp.cur<WORKOUT.ex.length-1||si<WORKOUT.ex[i].sets-1) rtStart(WORKOUT.ex[i].rest); }
     render();
   },
-  spFinish(){ DB.sp={done:{},cur:0,inputs:{}}; save(); DB.me.streak++; DB.me.sessionsMonth++; save(); A.cNav('home'); toast('Тренировка завершена! Streak +1 🔥'); },
+  spFinish(){
+    WORKOUT.ex.forEach((e,i)=>{
+      const pairs=[];
+      for(let si=0;si<e.sets;si++){ const wv=parseFloat(DB.sp.inputs['w'+i+'_'+si]), rv=parseFloat(DB.sp.inputs['r'+i+'_'+si]); if(wv&&rv) pairs.push([wv,rv]); }
+      if(!pairs.length) return;
+      const maxW=Math.max.apply(null,pairs.map(p=>p[0]));
+      const reps=Math.max.apply(null,pairs.filter(p=>p[0]===maxW).map(p=>p[1]));
+      DB.exHistory.push({name:e.name,weight:maxW,reps:reps,date:new Date().toISOString().slice(0,10)});
+    });
+    if(DB.exHistory.length>200) DB.exHistory=DB.exHistory.slice(-200);
+    DB.sp={done:{},cur:0,inputs:{}}; save(); DB.me.streak++; DB.me.sessionsMonth++; save(); A.cNav('home'); toast('Тренировка завершена! Streak +1 🔥');
+  },
 
   /* клиент: расписание */
   book(day,si){
@@ -762,8 +853,10 @@ const A={
   },
 
   /* клиент: чат */
-  chatSend(){
-    const inp=document.getElementById('chat-inp'); const txt=inp.value.trim(); if(!txt) return;
+  chatMode(m){ S.chatMode=m; render(); },
+  async chatSend(){
+    const inp=document.getElementById('chat-inp'); const txt=inp?inp.value.trim():''; if(!txt) return;
+    if(S.chatMode==='ai') return A.aiSend(txt);
     const d=new Date();
     DB.chat.push({who:'me',txt:txt,t:('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)});
     save(); inp.value=''; render();
@@ -772,13 +865,28 @@ const A={
       render();
       setTimeout(()=>{
         DB.chat.pop();
-        const pool=['Отлично! Держи темп 💪','Записал, скорректируем план на неделю','Так и планировал. Отдых — 90 секунд между подходами','Молодец! Завтра ноги — не забудь про разминку','Хорошо, посмотрим на замерах в конце недели 🔥'];
         const d2=new Date();
-        DB.chat.push({who:'tr',txt:pool[Math.floor(Math.random()*pool.length)],t:('0'+d2.getHours()).slice(-2)+':'+('0'+d2.getMinutes()).slice(-2)});
+        DB.chat.push({who:'tr',txt:pick(COACH_REPLIES),t:nowT()});
         save(); render();
       },1400);
     },700);
   },
+  async aiSend(txt){
+    if(!txt){ const inp=document.getElementById('chat-inp'); txt=inp?inp.value.trim():''; }
+    if(!txt) return;
+    DB.aiChat.push({who:'me',txt:txt,t:nowT()}); save();
+    const inp2=document.getElementById('chat-inp'); if(inp2) inp2.value='';
+    render();
+    const b=document.getElementById('chat-msgs'); if(b){ b.insertAdjacentHTML('beforeend','<div class="typing"><div class="small" style="background:rgba(124,92,255,.08);border:1px solid var(--line);border-radius:18px;padding:11px 15px;display:inline-flex;gap:4px;align-items:center"><i></i><i></i><i></i></div></div>'); b.scrollTop=b.scrollHeight; }
+    let reply='';
+    try{ if(navigator.onLine) reply=await aiLLM(txt); }catch(e){}
+    if(!reply) reply=aiLocal(txt);
+    if(b){ const tEl=b.querySelector('.typing'); if(tEl) tEl.remove(); }
+    DB.aiChat.push({who:'ai',txt:reply.slice(0,1400),t:nowT()});
+    if(DB.aiChat.length>60) DB.aiChat=DB.aiChat.slice(-60);
+    save(); render();
+  },
+  aiQuick(q){ A.aiSend(q); },
 
   /* клиент: профиль */
   tgl(k){ DB.settings[k]=!DB.settings[k]; save(); render(); },
