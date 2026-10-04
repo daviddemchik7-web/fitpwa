@@ -35,7 +35,13 @@ body{
     radial-gradient(1000px 700px at -10% -10%, rgba(124,92,255,.14), transparent 60%),
     radial-gradient(1000px 700px at 110% 110%, rgba(34,211,238,.10), transparent 60%);
   background-attachment:fixed;min-height:100vh;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  -webkit-tap-highlight-color:transparent;
+  overscroll-behavior-y:contain;
+  font-variant-numeric:tabular-nums;
 }
+::selection{background:rgba(124,92,255,.4)}
+:focus-visible{outline:2px solid rgba(124,92,255,.65);outline-offset:2px;border-radius:8px}
 button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer;transition:transform .1s}
 button:active{transform:scale(.98)}
 input,select,textarea{font-family:inherit;font-size:14px;color:var(--p);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:14px;padding:10px 13px;width:100%;outline:none;transition:border .15s, box-shadow .15s}
@@ -46,8 +52,10 @@ label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:upperca
 ::-webkit-scrollbar{width:8px;height:8px}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:8px}
 
-.glass{background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-radius:24px}
-.glass-sm{background:var(--glass2);border:1px solid var(--line);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:20px}
+.glass{background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-radius:24px;box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 20px 50px -24px rgba(0,0,0,.65)}
+.glass-sm{background:var(--glass2);border:1px solid var(--line);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.card-hover{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.card-hover:hover{transform:translateY(-3px);border-color:rgba(124,92,255,.4);box-shadow:0 18px 44px -20px rgba(124,92,255,.4)}
 .grad{background:linear-gradient(135deg,#7c5cff,#22d3ee);-webkit-background-clip:text;background-clip:text;color:transparent}
 .grad-bg{background:linear-gradient(135deg,#7c5cff,#22d3ee);color:#fff}
 .grad-border{position:relative;border:1px solid transparent;background:
@@ -71,17 +79,17 @@ label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:upperca
 .lucide-lg{width:22px;height:22px}
 
 /* nav */
-.side{width:250px;flex-shrink:0;border-right:1px solid var(--line);background:rgba(255,255,255,.03);backdrop-filter:blur(20px);position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:22px 14px}
+.side{width:250px;flex-shrink:0;border-right:1px solid var(--line);background:rgba(255,255,255,.03);backdrop-filter:blur(20px);position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:max(22px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-left)) 22px 14px}
 .nav-b{display:flex;align-items:center;gap:12px;width:100%;border-radius:20px;padding:11px 15px;font-size:14px;font-weight:600;color:var(--s);text-align:left;transition:background .15s,color .15s}
 .nav-b:hover{background:rgba(255,255,255,.05);color:var(--p)}
 .nav-b.on{background:linear-gradient(135deg,rgba(124,92,255,.18),rgba(34,211,238,.10));color:var(--p);border:1px solid rgba(124,92,255,.3)}
-.bnav{position:fixed;left:0;right:0;bottom:0;z-index:50;display:grid;grid-template-columns:repeat(5,1fr);background:rgba(5,7,10,.85);backdrop-filter:blur(20px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:50;display:grid;grid-template-columns:repeat(5,1fr);background:rgba(5,7,10,.85);backdrop-filter:blur(20px);border-top:1px solid var(--line);padding-bottom:max(env(safe-area-inset-bottom),6px)}
 .bnav button{height:62px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:600;color:var(--s2)}
 .bnav button.on{color:var(--p)}
 .bnav button.on .lucide{color:var(--vio)}
 @media(min-width:1024px){.bnav{display:none}.m-only{display:none!important}}
 @media(max-width:1023px){.side{display:none}.d-only{display:none!important}}
-.header{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:10px;padding:14px 18px;background:rgba(5,7,10,.75);backdrop-filter:blur(20px);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.header{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:10px;padding:max(14px,env(safe-area-inset-top)) 18px 14px;background:rgba(5,7,10,.75);backdrop-filter:blur(20px);border-bottom:1px solid var(--line);flex-wrap:wrap}
 .header .flex-1{min-width:0}
 
 /* progress ring */
@@ -104,11 +112,11 @@ label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:upperca
 .tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
 
 /* modal / toast / overlay */
-.overlay{position:fixed;inset:0;z-index:90;background:rgba(2,4,8,.72);backdrop-filter:blur(6px);display:flex;justify-content:center;align-items:flex-start;padding:18px;overflow-y:auto}
+.overlay{position:fixed;inset:0;z-index:90;background:rgba(2,4,8,.72);backdrop-filter:blur(6px);display:flex;justify-content:center;align-items:flex-start;padding:max(18px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom));overflow-y:auto}
 .modal{background:rgba(13,17,26,.92);border:1px solid var(--line2);backdrop-filter:blur(22px);border-radius:26px;width:100%;max-width:520px;margin:auto;animation:fadeIn .25s ease both}
 .modal-b{padding:20px;max-height:70vh;overflow-y:auto}
 .modal-f{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px;border-top:1px solid var(--line)}
-#toast-root{position:fixed;bottom:80px;right:14px;z-index:120;display:flex;flex-direction:column;gap:8px}
+#toast-root{position:fixed;bottom:calc(84px + env(safe-area-inset-bottom));right:calc(14px + env(safe-area-inset-right));z-index:120;display:flex;flex-direction:column;gap:8px}
 @media(min-width:1024px){#toast-root{bottom:20px}}
 .toast{background:rgba(13,17,26,.95);border:1px solid rgba(124,92,255,.45);border-radius:18px;padding:11px 16px;font-size:13px;font-weight:600;animation:fadeIn .25s ease}
 
@@ -177,8 +185,8 @@ table.tbl{width:100%;border-collapse:collapse;font-size:13px}
 
 /* --- адаптив: от 320px до ультрашироких --- */
 @media(max-width:640px){
-  .overlay{padding:10px}
-  .header{padding:11px 12px;gap:8px}
+  .overlay{padding:max(10px,env(safe-area-inset-top)) 10px}
+  .header{padding:max(11px,env(safe-area-inset-top)) 12px 11px;gap:8px}
   .header .rl{display:none}               /* роль — только иконкой */
   .kpi{padding:13px}
   .side{width:220px}
@@ -193,6 +201,9 @@ table.tbl{width:100%;border-collapse:collapse;font-size:13px}
 }
 .ic-box,.btn,.btn-ic,.check,.vplay,.av{flex-shrink:0}
 .lucide{max-width:none}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
 </style>
 </head>
 <body>
@@ -550,7 +561,7 @@ const ST={ 'Активен':'color:#67e8f9;border-color:rgba(34,211,238,.4);back
 function clientsListHTML(q){
   q=(q||'').toLowerCase();
   const list=DB.tClients.filter(c=>!q||c.name.toLowerCase().includes(q)||c.phone.includes(q));
-  return list.map(c=>'<div class="glass-sm p-4 cursor-pointer hover:opacity-90" onclick="A.clientInfo(\''+c.id+'\')">'+
+  return list.map(c=>'<div class="glass-sm p-4 cursor-pointer card-hover" onclick="A.clientInfo(\''+c.id+'\')">'+
      '<div class="flex items-center gap-3"><div class="av">'+c.name.split(' ').map(x=>x[0]).slice(0,2).join('')+'</div>'+
      '<div class="flex-1 min-w-0"><b class="small block truncate">'+esc(c.name)+'</b><div class="tiny muted truncate">'+esc(c.goal)+'</div></div>'+
      '<span class="badge" style="'+ST[c.status]+'">'+c.status+'</span></div>'+
@@ -586,7 +597,7 @@ function vWorkouts(){
     '<button class="btn btn-g btn-sm" onclick="A.peOpen()">'+ic('plus','lucide-sm')+'Создать программу</button>'+roleBtn()+'</header>'+
    '<div class="p-4 lg:p-6" style="max-width:1100px">'+
     '<div class="grid md:grid-cols-2 xl:grid-cols-3 gap-3">'+
-     DB.programs.map(p=>'<div class="glass-sm p-5">'+
+     DB.programs.map(p=>'<div class="glass-sm p-5 card-hover">'+
       '<div class="flex items-start justify-between"><b>'+esc(p.name)+'</b><span class="badge">'+p.tag+'</span></div>'+
       '<div class="flex gap-4 mt-3 tiny muted"><span>'+ic('calendar-days','lucide-sm')+' '+p.days+' дней</span><span>'+ic('dumbbell','lucide-sm')+' '+p.ex+' упражнений</span></div>'+
       '<button class="btn btn-sm mt-3 w-full" onclick="A.peOpen(\''+p.id+'\')">'+ic('pencil','lucide-sm')+'Открыть в конструкторе</button>'+
