@@ -515,11 +515,12 @@ const WORKOUT={name:'Пуш · Верх тела',ex:[
 function totalSets(){ return WORKOUT.ex.reduce((a,e)=>a+e.sets,0); }
 function doneSets(){ return WORKOUT.ex.reduce((a,e,i)=>a+(DB.sp.done[i]||[]).filter(Boolean).length,0); }
 
+function wd3(i){ return ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'][i]; }
 function vHome(){
   const p=totalSets()?doneSets()/totalSets():0;
   const c=aiCtx();
   const goalPct=Math.round(Math.max(0,Math.min(1,(c.start-c.cur)/(c.start-c.goal))*100));
-  const upcoming=[
+  const next=[
     {d:'Завтра · 09:00',n:'Ноги · Приседания и тяга',t:'P'},
     {d:'Ср · 18:00',n:'Персональная с Марком',t:'P'},
     {d:'Пт · 10:00',n:'Онлайн-тренировка',t:'O'}
@@ -527,20 +528,20 @@ function vHome(){
   return clientShell('home',
    '<header class="header"><div class="ic-box">'+ic('dumbbell')+'</div><div class="flex-1"><div class="tiny muted">Сегодня · '+todayLabel()+'</div><b>Привет, Ирина 👋</b></div>'+roleBtn()+'</header>'+
    '<div class="px-4 pb-28 pt-4 space-y-3">'+
-    '<div class="grad-border p-5" style="border-radius:26px">'+
-     '<div class="flex items-center gap-4"><div class="flex-1"><div class="tiny muted mb-1">Сегодняшняя тренировка</div><b style="font-size:17px">'+WORKOUT.name+'</b><div class="small muted mt-1">'+WORKOUT.ex.length+' упражнения · ~55 мин</div>'+
-     '<div class="flex items-center gap-2 mt-3 flex-wrap"><button class="btn btn-g" onclick="A.cNav(\'player\')">'+ic('play')+(p>0?'Продолжить':'Начать')+'</button><span class="badge st-ren">🔥 '+DB.me.streak+' дн подряд</span></div></div>'+
+    '<div class="grad-border p-5" style="border-radius:26px;cursor:pointer" onclick="A.cNav(\'player\')" title="Открыть тренировку">'+
+     '<div class="flex items-center gap-4"><div class="flex-1"><div class="tiny muted mb-1">Сегодняшняя тренировка</div><b style="font-size:17px">'+WORKOUT.name+'</b><div class="small muted mt-1">'+WORKOUT.ex.length+' упражнения · ~55 мин · вес подобран AI</div>'+
+     '<div class="flex items-center gap-2 mt-3 flex-wrap"><button class="btn btn-g" onclick="event.stopPropagation();A.cNav(\'player\')">'+ic('play')+(p>0?'Продолжить':'Начать')+'</button><span class="badge st-ren">🔥 '+DB.me.streak+' дн подряд</span></div></div>'+
      ring(p,92,9)+'</div>'+
+     '<div class="flex text-center mt-4 pt-3" style="border-top:1px solid var(--line)">'+
+      '<button class="flex-1" onclick="event.stopPropagation();A.cNav(\'progress\')"><div class="font-bold">'+(c.volume/1000).toFixed(1)+' т</div><div class="tiny muted">объём/нед</div></button>'+
+      '<button class="flex-1" style="border-left:1px solid var(--line)" onclick="event.stopPropagation();A.cNav(\'schedule\')"><div class="font-bold">'+DB.me.sessionsMonth+'</div><div class="tiny muted">занятий</div></button>'+
+      '<button class="flex-1" style="border-left:1px solid var(--line)" onclick="event.stopPropagation();A.cNav(\'progress\')"><div class="font-bold grad">'+goalPct+'%</div><div class="tiny muted">до цели</div></button>'+
+     '</div>'+
     '</div>'+
-    '<div class="glass-sm px-4 py-3 flex text-center">'+
-     '<div class="flex-1"><div class="font-bold">'+(c.volume/1000).toFixed(1)+' т</div><div class="tiny muted">объём/нед</div></div>'+
-     '<div class="flex-1" style="border-left:1px solid var(--line)"><div class="font-bold">'+DB.me.sessionsMonth+'</div><div class="tiny muted">занятий</div></div>'+
-     '<div class="flex-1" style="border-left:1px solid var(--line)"><div class="font-bold grad">'+goalPct+'%</div><div class="tiny muted">до цели</div></div>'+
-    '</div>'+
+    '<div class="glass p-5 card-hover" style="cursor:pointer" onclick="A.aiOpen()"><div class="flex items-center gap-2 mb-2">'+ic('sparkles','lucide-sm')+'<b class="small">AI-инсайт дня</b><span class="badge badge-ai">AI</span><span class="muted" style="margin-left:auto">'+ic('chevron-right','lucide-sm')+'</span></div><p class="small muted">'+aiInsight().join(' ')+'</p></div>'+
     '<div class="glass p-5"><div class="flex items-center justify-between mb-1"><b class="small">Ближайшие тренировки</b><button class="btn-ic" onclick="A.cNav(\'schedule\')">'+ic('calendar-days','lucide-sm')+'</button></div>'+
-     upcoming.slice(0,2).map(u=>'<div class="row-i">'+tdot(u.t)+'<div class="flex-1"><div class="font-bold small">'+u.n+'</div><div class="tiny muted">'+u.d+' · '+TYPE(u.t).n+'</div></div>'+ic('chevron-right','lucide-sm muted2')+'</div>').join('')+
+     next.map(u=>'<div class="row-i" style="cursor:pointer" onclick="A.cNav(\'schedule\')">'+tdot(u.t)+'<div class="flex-1"><div class="font-bold small">'+u.n+'</div><div class="tiny muted">'+u.d+' · '+TYPE(u.t).n+'</div></div>'+ic('chevron-right','lucide-sm muted2')+'</div>').join('')+
     '</div>'+
-    '<div class="glass p-5"><div class="flex items-center gap-2 mb-2">'+ic('sparkles','lucide-sm')+'<b class="small">AI-инсайт дня</b><span class="badge badge-ai">AI</span></div><p class="small muted">'+aiInsight().join(' ')+'</p></div>'+
    '</div>'
   );
 }
@@ -578,24 +579,35 @@ function vPlayer(){
   );
 }
 
+const SLOTS_PER_DAY=[
+ [{t:'08:00',type:'G',title:'Кроссфит · группа',left:'4 места'},{t:'18:00',type:'P',title:'Персональная тренировка',left:''}],
+ [{t:'10:00',type:'O',title:'Онлайн с тренером',left:''}],
+ [{t:'09:00',type:'P',title:'Персональная тренировка',left:''},{t:'19:00',type:'G',title:'Функциональная группа',left:'2 места'}],
+ [{t:'10:00',type:'O',title:'Онлайн с тренером',left:''}],
+ [{t:'08:00',type:'G',title:'Кроссфит · группа',left:'5 мест'},{t:'18:00',type:'P',title:'Персональная тренировка',left:''}],
+ [{t:'12:00',type:'G',title:'Стретчинг · группа',left:'6 мест'}],
+ []
+];
 function vScheduleC(){
   const wd=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
   const now=new Date(); const mon=new Date(now.getFullYear(),now.getMonth(),now.getDate()-((now.getDay()+6)%7));
   const days=Array.from({length:7},(_,i)=>{ const d=new Date(mon); d.setDate(d.getDate()+i+S.week*7); return d; });
-  const slots=[{t:'08:00',type:'G',title:'Кроссфит · группа',left:'4 места'},{t:'10:00',type:'O',title:'Онлайн с тренером',left:''},{t:'18:00',type:'P',title:'Персональная тренировка',left:''}];
+  const slots=SLOTS_PER_DAY[S.selDay];
   const my=DB.bookings.filter(b=>b.day===S.selDay);
   return clientShell('schedule',
-   '<header class="header"><div class="ic-box">'+ic('calendar-days')+'</div><div class="flex-1"><b>Расписание</b><div class="tiny muted">Запись на тренировки</div></div>'+roleBtn()+'</header>'+
-   '<div class="px-4 pb-28 pt-4 space-y-4">'+
+   '<header class="header"><div class="ic-box">'+ic('calendar-days')+'</div><div class="flex-1"><b>Расписание</b><div class="tiny muted">Запись в один тап</div></div>'+roleBtn()+'</header>'+
+   '<div class="px-4 pb-28 pt-4 space-y-3">'+
     '<div class="flex items-center justify-between"><b class="small">'+days[0].getDate()+' '+['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'][days[0].getMonth()]+' — '+days[6].getDate()+'</b><div class="flex gap-2"><button class="btn-ic" onclick="A.weekShift(-1)">'+ic('chevron-left','lucide-sm')+'</button><button class="btn-ic" onclick="A.weekShift(1)">'+ic('chevron-right','lucide-sm')+'</button></div></div>'+
-    '<div class="grid grid-cols-7 gap-1.5">'+days.map((d,i)=>'<button class="chip text-center '+(i===S.selDay?'on':'')+'" style="padding:8px 2px" onclick="A.selDay('+i+')"><div class="tiny">'+wd[i]+'</div><b style="font-size:14px">'+d.getDate()+'</b></button>').join('')+'</div>'+
-    '<div class="glass p-5"><b class="small">Мои записи</b>'+
-     (my.length?my.map((b,bi)=>'<div class="row-i">'+tdot(b.type)+'<div class="flex-1"><div class="font-bold small">'+b.title+'</div><div class="tiny muted">'+b.t+' · '+TYPE[b.type].n+'</div></div><button class="btn btn-sm" onclick="A.unBook('+b.day+','+bi+')">Отменить</button></div>').join(''):'<p class="small muted mt-2">На этот день записей нет</p>')+
+    '<div class="grid grid-cols-7 gap-1.5">'+days.map((d,i)=>{ const has=DB.bookings.some(b=>b.day===i);
+      return '<button class="chip text-center relative '+(i===S.selDay?'on':'')+'" style="padding:8px 2px" onclick="A.selDay('+i+')">'+(has?'<span class="dot" style="position:absolute;top:5px;right:6px;width:6px;height:6px;background:var(--a)"></span>':'')+'<div class="tiny">'+wd[i]+'</div><b style="font-size:14px">'+d.getDate()+'</b></button>'; }).join('')+'</div>'+
+    '<div class="glass p-5"><b class="small">Мои записи · '+wd[S.selDay]+'</b>'+
+     (my.length?my.map((b,bi)=>'<div class="row-i">'+tdot(b.type)+'<div class="flex-1"><div class="font-bold small">'+b.title+'</div><div class="tiny muted">'+b.t+' · '+TYPE(b.type).n+'</div></div><button class="btn btn-sm" onclick="A.unBook('+b.day+','+bi+')">Отменить</button></div>').join(''):'<p class="small muted mt-2">На этот день записей нет — выбери слот ниже</p>')+
     '</div>'+
-    '<div class="glass p-5"><b class="small">Свободные слоты · '+wd[S.selDay]+'</b>'+
-     slots.map((s,si)=>'<div class="row-i">'+tdot(s.type)+'<div class="flex-1"><div class="font-bold small">'+s.t+' · '+s.title+'</div><div class="tiny muted">'+TYPE[s.type].n+(s.left?' · '+s.left:'')+'</div></div><button class="btn btn-g btn-sm" onclick="A.book('+S.selDay+','+si+')">Записаться</button></div>').join('')+
-    '</div>'+
-    '<p class="tiny muted2 text-center">Фиолетовый — персональные · голубой — группы · градиент — онлайн</p>'+
+    (slots.length?'<div class="glass p-5"><b class="small">Свободные слоты · '+wd[S.selDay]+'</b>'+
+     slots.map((s,si)=>{ const isBooked=DB.bookings.some(b=>b.day===S.selDay&&b.t===s.t);
+      return '<div class="row-i" style="'+(isBooked?'opacity:.6':'')+'">'+tdot(s.type)+'<div class="flex-1"><div class="font-bold small">'+s.t+' · '+s.title+'</div><div class="tiny muted">'+TYPE(s.type).n+(s.left?' · '+s.left:'')+'</div></div>'+
+       (isBooked?'<span class="badge st-act">Вы записаны ✓</span>':'<button class="btn btn-g btn-sm" onclick="A.book('+S.selDay+','+si+')">Записаться</button>')+'</div>'; }).join('')+
+     '</div>':'<div class="glass p-5 text-center"><p class="small muted">🌙 Воскресенье — день отдыха. Восстановление — часть программы!</p></div>')+
    '</div>'
   );
 }
@@ -907,12 +919,11 @@ const A={
 
   /* клиент: расписание */
   book(day,si){
-    const slots=[{t:'08:00',type:'G',title:'Кроссфит · группа'},{t:'10:00',type:'O',title:'Онлайн с тренером'},{t:'18:00',type:'P',title:'Персональная тренировка'}];
-    const s=slots[si];
+    const s=SLOTS_PER_DAY[day][si]; if(!s) return;
     DB.bookings=DB.bookings.filter(b=>!(b.day===day&&b.t===s.t));
     DB.bookings.push({day:day,t:s.t,title:s.title,type:s.type});
-    DB.requests.push({id:uid(),name:'Ирина Соколова',slot:['Пн','Вт','Ср','Чт','Пт','Сб','Вс'][day]+' '+s.t+' · '+({P:'Персональная',G:'Групповая',O:'Онлайн'})[s.type]});
-    save(); render(); toast('Вы записаны: '+s.t+' ✅');
+    DB.requests.push({id:uid(),name:'Ирина Соколова',slot:['Пн','Вт','Ср','Чт','Пт','Сб','Вс'][day]+' '+s.t+' · '+TYPE(s.type).n});
+    save(); render(); toast('Вы записаны: '+wd3(day)+' '+s.t+' ✅');
   },
   unBook(day,bi){
     const mine=DB.bookings.filter(b=>b.day===day);
@@ -966,6 +977,7 @@ const A={
     save(); render();
   },
   aiQuick(q){ A.aiSend(q); },
+  aiOpen(){ S.chatMode='ai'; A.cNav('chat'); },
 
   /* клиент: профиль */
   tgl(k){ DB.settings[k]=!DB.settings[k]; save(); render(); },
