@@ -286,9 +286,21 @@ body.theme-cyber .side .grad{font-family:'Orbitron','Manrope',sans-serif;letter-
 const LS='fitpwa-v1';
 let DB=null;
 function defaultStore(){ return [
- {id:'st1',name:'Сушка · 6 недель',desc:'Жиросжигающий блок: силовые + кардио, дефицит калорий, контроль замеров каждую неделю',price:1990,weeks:6,tag:'Хит',days:[{title:'День 1 · Full body A',exercises:[{name:'Приседания с гантелями',sets:4,reps:'12-15',weight:'12 кг',rest:'60 сек'},{name:'Тяга верхнего блока',sets:3,reps:'12',weight:'30 кг',rest:'60 сек'},{name:'Планка',sets:3,reps:'45 сек',weight:'',rest:'45 сек'}]},{title:'День 2 · Кардио',exercises:[{name:'Интервальный бег',sets:1,reps:'20 мин',weight:'',rest:'—'}]}]},
- {id:'st2',name:'Бокс · Первый нокаут',desc:'4 недели базы для новичка: стойка, джеб, двойка, работа на ногах. Плюс скан техники удара камерой — AI считает скорость и резкость',price:2490,weeks:4,tag:'NEW · Скан удара',days:[{title:'Раунд-тренировка · Джеб',exercises:[{name:'Раунд 1 · Разминка + джеб',sets:1,reps:'180 сек',weight:'',rest:'60 сек'},{name:'Раунд 2 · Двойка',sets:1,reps:'180 сек',weight:'',rest:'60 сек'},{name:'Раунд 3 · Работа на ногах',sets:1,reps:'120 сек',weight:'',rest:'60 сек'},{name:'Финал · Серия на скорость',sets:3,reps:'30 сек',weight:'',rest:'30 сек'}]}]},
- {id:'st3',name:'Мобильность · Спина и бёдра',desc:'Мягкая растяжка и мобильность для офисных спин. 15 минут в день без оборудования',price:1290,weeks:3,tag:'Здоровье',days:[{title:'Ежедневно · 15 минут',exercises:[{name:'Кошка-корова',sets:2,reps:'10',weight:'',rest:'30 сек'},{name:'Поза ребёнка',sets:2,reps:'60 сек',weight:'',rest:'20 сек'},{name:'Выпад со скручиванием',sets:2,reps:'8 на сторону',weight:'',rest:'30 сек'}]}]}
+ {id:'st1',cat:'loss',name:'Сушка · 6 недель',desc:'Жиросжигающий блок: силовые + кардио, дефицит калорий, контроль замеров каждую неделю',price:1990,weeks:6,tag:'Хит',days:[{title:'День 1 · Full body A',exercises:[{name:'Приседания с гантелями',sets:4,reps:'12-15',weight:'12 кг',rest:'60 сек'},{name:'Тяга верхнего блока',sets:3,reps:'12',weight:'30 кг',rest:'60 сек'},{name:'Планка',sets:3,reps:'45 сек',weight:'',rest:'45 сек'}]},{title:'День 2 · Кардио',exercises:[{name:'Интервальный бег',sets:1,reps:'20 мин',weight:'',rest:'—'}]}]},
+ {id:'st8',cat:'strength',name:'Сила · База зала',desc:'Три базовых дня: присед, жим, тяга. Линейная прогрессия для первых 3 месяцев зала',price:1490,weeks:8,tag:'Силовые',days:[{title:'День A · Ноги',exercises:[{name:'Приседания со штангой',sets:5,reps:'5',weight:'60 кг',rest:'180 сек'},{name:'Жим ногами',sets:3,reps:'10',weight:'',rest:'120 сек'}]},{title:'День B · Верх',exercises:[{name:'Жим лежачи',sets:5,reps:'5',weight:'50 кг',rest:'180 сек'},{name:'Тяга штанги в наклоне',sets:4,reps:'8',weight:'',rest:'120 сек'}]}]},
+ {id:'st4',cat:'home',name:'Дом · Автономная программа',desc:'Полная программа дома без инвентаря: 3 дня в неделю по 25 минут, только вес тела. Работает где угодно — дома, в парке, в отеле',price:0,weeks:4,tag:'Бесплатно',days:[
+   {title:'День A · Верх тела',exercises:[{name:'Отжимания',sets:4,reps:'10-15',weight:'',rest:'60 сек'},{name:'Отжимания узким хватом',sets:3,reps:'8',weight:'',rest:'60 сек'},{name:'Супермен',sets:3,reps:'12',weight:'',rest:'45 сек'},{name:'Планка',sets:3,reps:'45 сек',weight:'',rest:'45 сек'}]},
+   {title:'День B · Ноги и ягодицы',exercises:[{name:'Приседания',sets:4,reps:'20',weight:'',rest:'60 сек'},{name:'Выпады',sets:3,reps:'12 на ногу',weight:'',rest:'60 сек'},{name:'Ягодичный мост',sets:3,reps:'20',weight:'',rest:'45 сек'},{name:'Подъёмы на носки',sets:3,reps:'25',weight:'',rest:'40 сек'}]},
+   {title:'День C · HIIT + кор',exercises:[{name:'Бурпи',sets:4,reps:'10',weight:'',rest:'60 сек'},{name:'Скалолаз',sets:4,reps:'30 сек',weight:'',rest:'30 сек'},{name:'Джампинг джек',sets:3,reps:'45 сек',weight:'',rest:'30 сек'},{name:'Велосипед',sets:3,reps:'30 сек',weight:'',rest:'30 сек'}]}]},
+ {id:'st2',cat:'martial',sub:'Базовая стойка',name:'Бокс · Первый нокаут',desc:'4 недели базы: стойка, джеб, двойка, хук, апперкот. Отдельные дни под каждый вид удара + скан техники удара камерой',price:2490,weeks:4,tag:'NEW · Скан удара',days:[
+   {title:'Джеб · техника и раунды',exercises:[{name:'Раунд 1 · Джеб с места',sets:1,reps:'180 сек',weight:'',rest:'60 сек'},{name:'Раунд 2 · Джеб с шагом',sets:1,reps:'180 сек',weight:'',rest:'60 сек'},{name:'Раунд 3 · Джеб + уход',sets:1,reps:'120 сек',weight:'',rest:'60 сек'}]},
+   {title:'Двойка · техника и раунды',exercises:[{name:'Раунд 1 · Джеб-кросс медленно',sets:1,reps:'120 сек',weight:'',rest:'45 сек'},{name:'Раунд 2 · Двойка в темпе',sets:1,reps:'180 сек',weight:'',rest:'60 сек'},{name:'Раунд 3 · Двойка + уход',sets:1,reps:'120 сек',weight:'',rest:'60 сек'}]},
+   {title:'Хук · техника и раунды',exercises:[{name:'Раунд 1 · Хук в полусопротивлении',sets:1,reps:'120 сек',weight:'',rest:'45 сек'},{name:'Раунд 2 · Двойка + хук',sets:1,reps:'180 сек',weight:'',rest:'60 сек'}]},
+   {title:'Апперкот · техника и раунды',exercises:[{name:'Раунд 1 · Апперкот с места',sets:1,reps:'120 сек',weight:'',rest:'45 сек'},{name:'Раунд 2 · Серии на скорость',sets:3,reps:'30 сек',weight:'',rest:'30 сек'}]}]},
+ {id:'st5',cat:'martial',sub:'Джеб',name:'Удар · Джеб',desc:'Отдельный мини-курс по джебу: дистанция, возврат руки, работа ног. 3 раунда + скан скорости удара',price:490,weeks:1,tag:'Вид удара',days:[{title:'Джеб · 3 раунда',exercises:[{name:'Раунд 1 · Джеб с места',sets:1,reps:'180 сек',weight:'',rest:'60 сек'},{name:'Раунд 2 · Джеб в движении',sets:1,reps:'180 сек',weight:'',rest:'60 сек'},{name:'Раунд 3 · Джеб на скорость',sets:3,reps:'30 сек',weight:'',rest:'30 сек'}]}]},
+ {id:'st6',cat:'martial',sub:'Хук',name:'Удар · Хук',desc:'Боковой удар: траектория, поворот корпуса, ударная дистанция. 3 раунда + скан',price:490,weeks:1,tag:'Вид удара',days:[{title:'Хук · 3 раунда',exercises:[{name:'Раунд 1 · Хук в полусопротивлении',sets:1,reps:'120 сек',weight:'',rest:'45 сек'},{name:'Раунд 2 · Хук двумя руками',sets:1,reps:'180 сек',weight:'',rest:'60 сек'},{name:'Раунд 3 · Серии хуков',sets:3,reps:'30 сек',weight:'',rest:'30 сек'}]}]},
+ {id:'st7',cat:'martial',sub:'Апперкот',name:'Удар · Апперкот',desc:'Удар снизу: ноги, корпус, траектория «в подбородок». 3 раунда + скан',price:490,weeks:1,tag:'Вид удара',days:[{title:'Апперкот · 3 раунда',exercises:[{name:'Раунд 1 · Апперкот с места',sets:1,reps:'120 сек',weight:'',rest:'45 сек'},{name:'Раунд 2 · Апперкот в комбинации',sets:1,reps:'180 сек',weight:'',rest:'60 сек'},{name:'Раунд 3 · Апперкот на скорость',sets:3,reps:'30 сек',weight:'',rest:'30 сек'}]}]},
+ {id:'st3',cat:'mobility',name:'Мобильность · Спина и бёдра',desc:'Мягкая растяжка и мобильность для офисных спин. 15 минут в день без оборудования',price:1290,weeks:3,tag:'Здоровье',days:[{title:'Ежедневно · 15 минут',exercises:[{name:'Кошка-корова',sets:2,reps:'10',weight:'',rest:'30 сек'},{name:'Поза ребёнка',sets:2,reps:'60 сек',weight:'',rest:'20 сек'},{name:'Выпад со скручиванием',sets:2,reps:'8 на сторону',weight:'',rest:'30 сек'}]}]}
 ];}
 function seed(){
   return {
@@ -352,7 +364,7 @@ function seed(){
 }
 function load(){ try{ const r=localStorage.getItem(LS); DB=r?JSON.parse(r):null; }catch(e){ DB=null; } if(!DB||!DB.me){ DB=seed(); save(); } S.role=DB.role||'client';
   if(!DB.aiChat) DB.aiChat=[]; if(!DB.exHistory) DB.exHistory=[]; if(!DB.settings.theme) DB.settings.theme='classic';
-  if(!DB.store) DB.store=defaultStore(); if(!DB.purchased) DB.purchased=[];
+  if(!DB.store||!DB.store.some(s=>s.cat)) DB.store=defaultStore(); if(!DB.purchased) DB.purchased=[];
   if(!DB.todayWorkout) DB.todayWorkout=seed().todayWorkout;
   WORKOUT=DB.todayWorkout;
   applyTheme(); }
@@ -381,23 +393,29 @@ function updateReps(n,q,kmh){
   if(dots){ let h=''; for(let i=0;i<Math.min(Math.max(n,6),12);i++) h+='<i class="'+(i<n?'f':'')+'"></i>'; dots.innerHTML=h; }
   const qel=document.getElementById('pm-q'); if(qel) qel.textContent=q!=null?q+'%':(kmh!=null?kmh+' км/ч':'—');
 }
+const CATS={all:'Все',martial:'🥊 Единоборства',home:'Дом',loss:'Похудение',strength:'Силовые',mobility:'Мобильность',coach:'От тренера'};
 function vStore(){
+  const cat=S.storeCat||'all';
+  const list=DB.store.filter(s=>cat==='all'||s.cat===cat||(!CATS[s.cat]&&cat==='coach'));
   return clientShell('store',
-   '<header class="header"><div class="ic-box">'+ic('shopping-bag')+'</div><div class="flex-1"><b>Магазин</b><div class="tiny muted">Программы от тренера · оплата демо</div></div>'+roleBtn()+'</header>'+
+   '<header class="header"><div class="ic-box">'+ic('shopping-bag')+'</div><div class="flex-1"><b>Магазин</b><div class="tiny muted">Категории тренировок · оплата демо</div></div>'+roleBtn()+'</header>'+
    '<div class="px-4 pb-28 pt-4 space-y-3">'+
-    '<div class="grad-border p-4"><div class="flex items-center gap-3">'+ic('zap','lucide-sm')+'<div><b class="small">Скан техники — наш козырь</b><div class="tiny muted">Купи бокс-курс и тренируйся с AI-разбором удара по камере</div></div></div></div>'+
-    DB.store.map(s=>{
+    '<div class="flex gap-2 overflow-x-auto pb-1">'+Object.keys(CATS).map(k=>'<button class="chip '+(cat===k?'on':'')+'" style="flex-shrink:0" onclick="A.storeCat(\''+k+'\')">'+CATS[k]+'</button>').join('')+'</div>'+
+    (cat==='martial'?'<div class="grad-border p-4"><div class="flex items-center gap-3">'+ic('video','lucide-sm')+'<div><b class="small">Виды ударов — отдельные курсы</b><div class="tiny muted">Джеб · Двойка · Хук · Апперкот — каждый со сканом техники удара</div></div></div></div>':'')+
+    list.map(s=>{
      const owned=DB.purchased.indexOf(s.id)>=0;
+     const free=!s.price;
      return '<div class="glass-sm p-5 card-hover">'+
       '<div class="flex items-start justify-between gap-2"><b style="font-size:15px">'+esc(s.name)+'</b><span class="badge st-ren">'+esc(s.tag)+'</span></div>'+
+      (s.sub?'<div class="tiny" style="color:var(--b);margin-top:3px">Вид удара: '+esc(s.sub)+'</div>':'')+
       '<p class="small muted mt-1">'+esc(s.desc)+'</p>'+
-      '<div class="flex gap-4 tiny muted mt-2"><span>'+ic('calendar-days','lucide-sm')+' '+s.weeks+' недель</span><span>'+ic('check-circle','lucide-sm')+' доступ навсегда</span></div>'+
-      '<div class="row between mt-3"><b class="grad" style="font-size:19px">'+money(s.price)+'</b>'+
-       (owned?'<button class="btn btn-g btn-sm" onclick="A.startProgram(\''+s.id+'\')">'+ic('play','lucide-sm')+'Начать программу</button>':'<button class="btn btn-g btn-sm" onclick="A.buyOpen(\''+s.id+'\')">'+ic('credit-card','lucide-sm')+'Купить</button>')+
+      '<div class="flex gap-4 tiny muted mt-2"><span>'+ic('calendar-days','lucide-sm')+' '+s.weeks+' недель</span><span>'+ic('check-circle','lucide-sm')+' доступ навсегда</span><span>'+ic('video','lucide-sm')+' видео техники</span></div>'+
+      '<div class="row between mt-3"><b class="grad" style="font-size:19px">'+(free?'Free':money(s.price))+'</b>'+
+       ((owned||free)?'<button class="btn btn-g btn-sm" onclick="A.startProgram(\''+s.id+'\')">'+ic('play','lucide-sm')+(free?'Начать бесплатно':'Начать программу')+'</button>':'<button class="btn btn-g btn-sm" onclick="A.buyOpen(\''+s.id+'\')">'+ic('credit-card','lucide-sm')+'Купить</button>')+
       '</div>'+(owned?'<div class="tiny" style="color:var(--b);margin-top:6px">✓ Куплено — программа твоя навсегда</div>':'')+
      '</div>';
     }).join('')+
-    (DB.purchased.length?'':'<p class="tiny muted2 text-center">После покупки программа появится в плеере и в профиле</p>')+
+    (list.length?'':'<div class="empty">В этой категории пока пусто</div>')+
    '</div>'
   );
 }
@@ -668,7 +686,8 @@ function vPlayer(){
      '<div class="bars"><i></i><i></i><i></i><i></i><i></i></div>'+
      '<div class="absolute bottom-3 left-4 tiny muted">Демо-видео · свайп = след. упражнение</div>'+
     '</div>'+
-    '<button class="btn btn-sm w-full ai-tip" onclick="A.poseOpen()" style="border-color:var(--aB)">'+ic('video')+'Повтори движение со сканером · AI-скелет</button>'+
+    '<button class="btn btn-sm w-full ai-tip" onclick="A.exVideo()" style="border-color:var(--aB)">'+ic('video')+'Видео техники · эталонное движение</button>'+
+    '<button class="btn btn-sm w-full" onclick="A.poseOpen()">'+ic('video')+'Повтори движение со сканером · AI-скелет</button>'+
     '<div class="glass p-5">'+
      '<div class="flex items-center justify-between"><div><b>'+e.name+'</b><div class="small muted mt-0.5">'+e.sets+' × '+e.reps+' · отдых '+e.rest+' сек</div></div>'+
       '<div class="tiny muted">'+(i+1)+' / '+WORKOUT.ex.length+'</div></div>'+
@@ -1118,6 +1137,7 @@ const A={
   aiOpen(){ S.chatMode='ai'; A.cNav('chat'); },
 
   /* магазин */
+  storeCat(k){ S.storeCat=k; render(); },
   buyOpen(id){
     const s=DB.store.find(x=>x.id===id); if(!s) return;
     window._buyPrice=s.price;
@@ -1297,6 +1317,17 @@ const A={
     const el=document.getElementById('pm-reps'); if(el) el.textContent='0';
   },
 
+  exVideo(){
+    const e=WORKOUT.ex[Math.min(DB.sp.cur,WORKOUT.ex.length-1)]||{name:'Упражнение'};
+    openModal(mHead('Техника · '+esc(e.name))+
+     '<div class="modal-b">'+
+      '<div class="pm-frame" style="aspect-ratio:16/10;display:flex;align-items:center;justify-content:center">'+
+       '<div style="text-align:center"><div class="ic-box mx-auto">'+ic('video')+'</div><b class="small mt-2 block">'+esc(e.name)+'</b><p class="tiny muted mt-1 px-4">Эталонное видео: идеальная техника от квалифицированных тренеров</p></div>'+
+      '</div>'+
+      '<a class="btn btn-g w-full mt-3" target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query='+encodeURIComponent(e.name+' правильная техника упражнения')+'">'+ic('external-link','lucide-sm')+'Открыть эталонные видео на YouTube</a>'+
+      '<p class="tiny muted2 mt-2 text-center">Позже здесь появится встроенное видео тренера (Mux/YouTube) — поле уже поддерживается</p>'+
+     '</div><div class="modal-f"><button class="btn" onclick="A.closeModal()">Закрыть</button></div>');
+  },
   /* карточка результата */
   shareCard(){
     openModal(mHead('Карточка результата · PNG')+
