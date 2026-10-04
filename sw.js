@@ -1,5 +1,5 @@
 /* FitPWA service worker — network-first + runtime cache fallback */
-const CACHE = 'fitpwa-v6';
+const CACHE = 'fitpwa-v7';
 /* Прекэш CDN, чтобы иконки/стили не терялись офлайн */
 const PRECACHE = [
   'https://cdn.tailwindcss.com',
